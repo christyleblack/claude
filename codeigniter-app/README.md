@@ -100,3 +100,37 @@ php spark serve
 Exemple fourni : table `articles` (`app/Database/Migrations`), `ArticleModel`, contrôleur `Articles`.
 Routes : `GET /articles` (liste) et `POST /articles` (champs `titre`, `contenu`).
 Changer le mot de passe `ci_password` avant toute utilisation hors développement.
+
+## Installation sous Ubuntu
+
+Le projet exige PHP 8.2 ou plus récent (Ubuntu 24.04 fournit PHP 8.3). Sur Ubuntu 22.04, la version par défaut est PHP 8.1 : il faut alors ajouter le dépôt PPA `ondrej/php`.
+
+1. Installer les paquets :
+
+```bash
+sudo apt update
+sudo apt install git composer mysql-server php-cli php-mysql php-intl php-mbstring php-xml php-curl unzip
+php -v
+```
+
+2. Récupérer le projet et ses dépendances :
+
+```bash
+git clone https://github.com/christyleblack/claude
+cd claude/codeigniter-app
+composer install
+cp env .env
+```
+
+3. Créer la base (voir la section « Base de données MySQL » ci-dessus) avec `sudo mysql`, puis renseigner `.env`.
+
+4. Lancer les migrations et le serveur de développement :
+
+```bash
+php spark migrate
+php spark serve
+```
+
+L'application est accessible sur http://localhost:8080 et `http://localhost:8080/articles` renvoie la liste des articles au format JSON.
+
+Mettre à jour le code : `git pull`. Envoyer ses modifications : `git push`.
