@@ -12,6 +12,7 @@
     <div class="contenu"><?= esc($article['contenu']) ?></div>
 </article>
 
+<?php if (auth()->loggedIn()): ?>
 <div class="actions">
     <a class="bouton secondaire" href="<?= site_url('articles/' . $article['id'] . '/edit') ?>">Modifier</a>
     <form action="<?= site_url('articles/' . $article['id'] . '/delete') ?>" method="post"
@@ -20,6 +21,7 @@
         <button class="bouton danger" type="submit">Supprimer</button>
     </form>
 </div>
+<?php endif ?>
 
 <p><a href="<?= site_url('articles') ?>">Retour à la liste</a></p>
 <?= $this->endSection() ?>

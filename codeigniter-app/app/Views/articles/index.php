@@ -2,7 +2,9 @@
 
 <?= $this->section('contenu') ?>
 <?php if ($articles === []): ?>
-    <p>Aucun article pour le moment. <a href="<?= site_url('articles/new') ?>">Écrire le premier</a>.</p>
+    <p>Aucun article pour le moment.
+    <?php if (auth()->loggedIn()): ?><a href="<?= site_url('articles/new') ?>">Écrire le premier</a>.<?php endif ?>
+</p>
 <?php else: ?>
     <?php foreach ($articles as $article): ?>
         <div class="article">

@@ -93,7 +93,7 @@ database.default.port = 3306
 3. Lancer les migrations puis le serveur :
 
 ```bash
-php spark migrate
+php spark migrate --all
 php spark serve
 ```
 
@@ -111,7 +111,20 @@ Pages HTML (vues dans `app/Views/articles`, mise en page commune dans `app/Views
 | `POST /articles/{id}` | enregistrement des modifications (CSRF) |
 | `POST /articles/{id}/delete` | suppression, après confirmation (CSRF) |
 
-API JSON (sans CSRF) : `GET /api/articles` et `POST /api/articles` (champs `titre`, `contenu`).
+API JSON (sans CSRF) : `GET /api/articles` (public) et `POST /api/articles` (champs `titre`, `contenu`, jeton d'accès requis, voir plus bas).
+
+## Utilisateurs (CodeIgniter Shield)
+
+L'authentification repose sur [CodeIgniter Shield](https://shield.codeigniter.com/), le module officiel. Ses tables (`users`, `auth_identities`, etc.) sont créées par `php spark migrate --all` : l'option `--all` est indispensable, car les migrations de Shield ne sont pas dans le dossier `app/`.
+
+- Lecture des articles : publique.
+- Création, modification, suppression : réservées aux utilisateurs connectés (filtre `session` dans `app/Config/Routes.php`). Un visiteur est redirigé vers la page de connexion.
+- Pages fournies par Shield : `/register` (inscription), `/login` (connexion), `/logout` (déconnexion). Elles sont en français (`defaultLocale = 'fr'` dans `app/Config/App.php`).
+- Configuration : `app/Config/Auth.php` (redirections, règles de mot de passe, activation par e-mail désactivée par défaut).
+
+Créer un utilisateur en ligne de commande : `php spark shield:user create`.
+
+L'API `POST /api/articles` exige un jeton d'accès Shield, transmis dans l'en-tête `Authorization: Bearer <jeton>`. Un jeton se génère en PHP pour un utilisateur donné : `$user->generateAccessToken('nom')->raw_token` (le jeton brut n'est visible qu'au moment de sa création).
 Changer le mot de passe `ci_password` avant toute utilisation hors développement.
 
 ## Installation sous Ubuntu
@@ -140,7 +153,7 @@ cp env .env
 4. Lancer les migrations et le serveur de développement :
 
 ```bash
-php spark migrate
+php spark migrate --all
 php spark serve
 ```
 
