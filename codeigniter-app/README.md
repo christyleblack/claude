@@ -97,8 +97,18 @@ php spark migrate
 php spark serve
 ```
 
-Exemple fourni : table `articles` (`app/Database/Migrations`), `ArticleModel`, contrôleur `Articles`.
-Routes : `GET /articles` (liste) et `POST /articles` (champs `titre`, `contenu`).
+Exemple fourni : table `articles` (`app/Database/Migrations`), `ArticleModel` (avec règles de validation), contrôleurs `Articles` (pages HTML) et `Api\Articles` (JSON).
+
+Pages HTML (vues dans `app/Views/articles`, mise en page commune dans `app/Views/layouts/main.php`) :
+
+| Adresse | Rôle |
+|---------|------|
+| `GET /articles` | liste des articles |
+| `GET /articles/new` | formulaire de création |
+| `POST /articles` | enregistrement (protégé par jeton CSRF) |
+| `GET /articles/{id}` | affichage d'un article |
+
+API JSON (sans CSRF) : `GET /api/articles` et `POST /api/articles` (champs `titre`, `contenu`).
 Changer le mot de passe `ci_password` avant toute utilisation hors développement.
 
 ## Installation sous Ubuntu

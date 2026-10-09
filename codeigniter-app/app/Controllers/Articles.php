@@ -3,14 +3,35 @@
 namespace App\Controllers;
 
 use App\Models\ArticleModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Articles extends BaseController
 {
     public function index()
     {
-        $articles = (new ArticleModel())->orderBy('id', 'DESC')->findAll();
+        return view('articles/index', [
+            'titrePage' => 'Articles',
+            'articles'  => (new ArticleModel())->orderBy('id', 'DESC')->findAll(),
+        ]);
+    }
 
-        return $this->response->setJSON($articles);
+    public function show(int $id)
+    {
+        $article = (new ArticleModel())->find($id);
+
+        if ($article === null) {
+            throw PageNotFoundException::forPageNotFound('Article introuvable.');
+        }
+
+        return view('articles/show', [
+            'titrePage' => $article['titre'],
+            'article'   => $article,
+        ]);
+    }
+
+    public function new()
+    {
+        return view('articles/new', ['titrePage' => 'Nouvel article']);
     }
 
     public function create()
@@ -22,9 +43,9 @@ class Articles extends BaseController
         ]);
 
         if ($id === false) {
-            return $this->response->setStatusCode(400)->setJSON(['erreurs' => $model->errors()]);
+            return redirect()->back()->withInput()->with('erreurs', $model->errors());
         }
 
-        return $this->response->setStatusCode(201)->setJSON($model->find($id));
+        return redirect()->to('articles/' . $id)->with('message', 'Article enregistré.');
     }
 }

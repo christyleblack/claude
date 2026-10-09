@@ -3,7 +3,14 @@
 use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
-$routes->get('/', 'Home::index');
+$routes->get('/', static fn () => redirect()->to('articles'));
 
 $routes->get('articles', 'Articles::index');
+$routes->get('articles/new', 'Articles::new');
+$routes->get('articles/(:num)', 'Articles::show/$1');
 $routes->post('articles', 'Articles::create');
+
+$routes->group('api', static function ($routes) {
+    $routes->get('articles', 'Api\\Articles::index');
+    $routes->post('articles', 'Api\\Articles::create');
+});
