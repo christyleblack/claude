@@ -46,8 +46,8 @@ class Auth extends ShieldAuth
      * --------------------------------------------------------------------
      */
     public array $views = [
-        'login'                       => '\CodeIgniter\Shield\Views\login',
-        'register'                    => '\CodeIgniter\Shield\Views\register',
+        'login'                       => 'auth/login',
+        'register'                    => 'auth/register',
         'layout'                      => '\CodeIgniter\Shield\Views\layout',
         'action_email_2fa'            => '\CodeIgniter\Shield\Views\email_2fa_show',
         'action_email_2fa_verify'     => '\CodeIgniter\Shield\Views\email_2fa_verify',
@@ -182,7 +182,8 @@ class Auth extends ShieldAuth
      * could be modified as the only method of login once an account
      * has been set up.
      */
-    public bool $allowMagicLinkLogins = true;
+    // Désactivé : la connexion par lien magique envoie un e-mail, et aucun envoi n'est configuré (app/Config/Email.php)
+    public bool $allowMagicLinkLogins = false;
 
     /**
      * --------------------------------------------------------------------
