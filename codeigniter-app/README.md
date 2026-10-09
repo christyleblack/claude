@@ -107,6 +107,9 @@ Pages HTML (vues dans `app/Views/articles`, mise en page commune dans `app/Views
 | `GET /articles/new` | formulaire de création |
 | `POST /articles` | enregistrement (protégé par jeton CSRF) |
 | `GET /articles/{id}` | affichage d'un article |
+| `GET /articles/{id}/edit` | formulaire de modification |
+| `POST /articles/{id}` | enregistrement des modifications (CSRF) |
+| `POST /articles/{id}/delete` | suppression, après confirmation (CSRF) |
 
 API JSON (sans CSRF) : `GET /api/articles` et `POST /api/articles` (champs `titre`, `contenu`).
 Changer le mot de passe `ci_password` avant toute utilisation hors développement.

@@ -18,6 +18,10 @@
         label { display: block; margin: 16px 0 4px; font-weight: 600; }
         input[type=text], textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
         textarea { min-height: 180px; }
+        .actions { display: flex; gap: 8px; align-items: center; margin-top: 24px; }
+        .actions form { margin: 0; }
+        .bouton.secondaire { background: #555; }
+        .bouton.danger { background: #b3261e; }
         .contenu { white-space: pre-line; line-height: 1.6; }
     </style>
 </head>
