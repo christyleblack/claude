@@ -9,7 +9,7 @@
     <?php foreach ($articles as $article): ?>
         <div class="article">
             <h2><a href="<?= site_url('articles/' . $article['id']) ?>"><?= esc($article['titre']) ?></a></h2>
-            <span class="date">Publié le <?= esc($article['created_at']) ?></span>
+            <span class="date">Publié le <?= esc($article['created_at']) ?> par <?= esc($article['auteur'] ?? 'auteur inconnu') ?></span>
         </div>
     <?php endforeach ?>
 <?php endif ?>

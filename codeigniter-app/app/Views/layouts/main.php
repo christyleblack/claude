@@ -14,7 +14,8 @@
         .article h2 { margin: 0 0 4px; font-size: 1.2rem; }
         .date { color: #777; font-size: .85rem; }
         .message { background: #e7f6e7; border: 1px solid #b6e0b6; padding: 10px; border-radius: 4px; }
-        .erreurs { background: #fdecea; border: 1px solid #f5c2bd; padding: 10px 10px 10px 30px; border-radius: 4px; }
+        .erreurs { background: #fdecea; border: 1px solid #f5c2bd; padding: 10px; border-radius: 4px; }
+        ul.erreurs { padding-left: 30px; }
         label { display: block; margin: 16px 0 4px; font-weight: 600; }
         input[type=text], textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
         textarea { min-height: 180px; }
@@ -44,6 +45,9 @@
 
     <?php if (session()->getFlashdata('message')): ?>
         <p class="message"><?= esc(session()->getFlashdata('message')) ?></p>
+    <?php endif ?>
+    <?php if (session()->getFlashdata('erreur')): ?>
+        <p class="erreurs"><?= esc(session()->getFlashdata('erreur')) ?></p>
     <?php endif ?>
 
     <?= $this->renderSection('contenu') ?>

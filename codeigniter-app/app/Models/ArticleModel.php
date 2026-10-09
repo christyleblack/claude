@@ -8,7 +8,7 @@ class ArticleModel extends Model
 {
     protected $table         = 'articles';
     protected $primaryKey    = 'id';
-    protected $allowedFields = ['titre', 'contenu'];
+    protected $allowedFields = ['user_id', 'titre', 'contenu'];
     protected $useTimestamps = true;
 
     protected $validationRules = [
@@ -26,4 +26,13 @@ class ArticleModel extends Model
             'max_length' => 'Le contenu ne doit pas dépasser 10 000 caractères.',
         ],
     ];
+
+    /**
+     * Ajoute le nom de l'auteur (colonne « auteur », null si inconnu) aux résultats.
+     */
+    public function avecAuteur(): static
+    {
+        return $this->select('articles.*, users.username AS auteur')
+            ->join('users', 'users.id = articles.user_id', 'left');
+    }
 }
