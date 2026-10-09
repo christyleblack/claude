@@ -67,3 +67,36 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - json (enabled by default - don't turn it off)
 - [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
 - [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+
+## Base de données MySQL
+
+1. Créer la base et l'utilisateur :
+
+```sql
+CREATE DATABASE ci_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'ci_user'@'localhost' IDENTIFIED BY 'ci_password';
+GRANT ALL ON ci_app.* TO 'ci_user'@'localhost';
+```
+
+2. Copier `env` en `.env` et renseigner (le fichier `.env` n'est pas versionné) :
+
+```
+CI_ENVIRONMENT = development
+database.default.hostname = localhost
+database.default.database = ci_app
+database.default.username = ci_user
+database.default.password = ci_password
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+```
+
+3. Lancer les migrations puis le serveur :
+
+```bash
+php spark migrate
+php spark serve
+```
+
+Exemple fourni : table `articles` (`app/Database/Migrations`), `ArticleModel`, contrôleur `Articles`.
+Routes : `GET /articles` (liste) et `POST /articles` (champs `titre`, `contenu`).
+Changer le mot de passe `ci_password` avant toute utilisation hors développement.
