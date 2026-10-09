@@ -13,13 +13,20 @@ class AddUserIdToArticles extends Migration
             'user_id' => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'null' => true, 'after' => 'id'],
         ]);
         // Si l'auteur est supprimé, ses articles restent mais sans auteur
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'SET NULL', 'articles_user_id_foreign');
+        // Pas de nom explicite : SQLite ne les prend pas en charge, CodeIgniter en génère un
+        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'SET NULL');
         $this->forge->processIndexes('articles');
     }
 
     public function down()
     {
-        $this->forge->dropForeignKey('articles', 'articles_user_id_foreign');
+        // Le nom de la clé étrangère dépend du pilote (MySQL, SQLite) : on le lit dans la base
+        foreach ($this->db->getForeignKeyData('articles') as $cle) {
+            if ($cle->column_name === ['user_id']) {
+                $this->forge->dropForeignKey('articles', $cle->constraint_name);
+            }
+        }
+
         $this->forge->dropColumn('articles', 'user_id');
     }
 }

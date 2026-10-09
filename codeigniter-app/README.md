@@ -149,7 +149,7 @@ Le projet exige PHP 8.2 ou plus récent (Ubuntu 24.04 fournit PHP 8.3). Sur Ubun
 
 ```bash
 sudo apt update
-sudo apt install git composer mysql-server php-cli php-mysql php-intl php-mbstring php-xml php-curl unzip
+sudo apt install git composer mysql-server php-cli php-mysql php-sqlite3 php-intl php-mbstring php-xml php-curl unzip
 php -v
 ```
 
@@ -174,3 +174,19 @@ php spark serve
 L'application est accessible sur http://localhost:8080 et `http://localhost:8080/articles` renvoie la liste des articles au format JSON.
 
 Mettre à jour le code : `git pull`. Envoyer ses modifications : `git push`.
+
+## Tests automatisés
+
+```bash
+composer test
+```
+
+Les tests utilisent une base SQLite en mémoire, recréée pour chaque test (configuration `tests` dans `app/Config/Database.php`). Ils ne nécessitent pas MySQL et ne touchent jamais à la base de développement. L'extension PHP `sqlite3` est requise (`sudo apt install php-sqlite3`).
+
+- `tests/feature/ArticlesTest.php` : pages HTML (lecture publique, connexion obligatoire pour écrire, protection CSRF, validation, droits de l'auteur et des administrateurs).
+- `tests/feature/ApiArticlesTest.php` : API JSON (lecture publique, jeton d'accès obligatoire pour créer, auteur enregistré, validation).
+
+Afficher chaque test avec son nom : `vendor/bin/phpunit --no-coverage --testdox`.
+
+Les tests sont aussi lancés automatiquement par GitHub Actions à chaque push sur `main` et à chaque pull request (`.github/workflows/tests.yml`, onglet « Actions » du dépôt).
+
