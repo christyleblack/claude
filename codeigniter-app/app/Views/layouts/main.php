@@ -18,6 +18,8 @@
         label { display: block; margin: 16px 0 4px; font-weight: 600; }
         input[type=text], textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
         textarea { min-height: 180px; }
+        .compte { display: flex; gap: 12px; align-items: center; }
+        .compte a:not(.bouton) { color: #dd4814; }
         .actions { display: flex; gap: 8px; align-items: center; margin-top: 24px; }
         .actions form { margin: 0; }
         .bouton.secondaire { background: #555; }
@@ -28,7 +30,16 @@
 <body>
     <header>
         <h1><a href="<?= site_url('articles') ?>">Mes articles</a></h1>
-        <a class="bouton" href="<?= site_url('articles/new') ?>">Nouvel article</a>
+        <nav class="compte">
+            <?php if (auth()->loggedIn()): ?>
+                <span><?= esc(auth()->user()->username) ?></span>
+                <a href="<?= site_url('logout') ?>">Déconnexion</a>
+                <a class="bouton" href="<?= site_url('articles/new') ?>">Nouvel article</a>
+            <?php else: ?>
+                <a href="<?= site_url('login') ?>">Connexion</a>
+                <a href="<?= site_url('register') ?>">Inscription</a>
+            <?php endif ?>
+        </nav>
     </header>
 
     <?php if (session()->getFlashdata('message')): ?>
