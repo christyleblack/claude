@@ -4,7 +4,7 @@
 <article>
     <h2><?= esc($article['titre']) ?></h2>
     <p class="date">
-        Publié le <?= esc($article['created_at']) ?>
+        Publié le <?= esc($article['created_at']) ?> par <?= esc($article['auteur'] ?? 'auteur inconnu') ?>
         <?php if ($article['updated_at'] !== $article['created_at']): ?>
             · modifié le <?= esc($article['updated_at']) ?>
         <?php endif ?>
@@ -12,7 +12,7 @@
     <div class="contenu"><?= esc($article['contenu']) ?></div>
 </article>
 
-<?php if (auth()->loggedIn()): ?>
+<?php if (peut_modifier_article($article)): ?>
 <div class="actions">
     <a class="bouton secondaire" href="<?= site_url('articles/' . $article['id'] . '/edit') ?>">Modifier</a>
     <form action="<?= site_url('articles/' . $article['id'] . '/delete') ?>" method="post"

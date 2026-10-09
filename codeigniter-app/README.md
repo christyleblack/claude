@@ -124,6 +124,20 @@ L'authentification repose sur [CodeIgniter Shield](https://shield.codeigniter.co
 
 Créer un utilisateur en ligne de commande : `php spark shield:user create`.
 
+### Auteur des articles et droits
+
+Chaque article enregistre son auteur (colonne `articles.user_id`, clé étrangère vers `users`). L'auteur est affiché dans la liste et sur la page de l'article.
+
+Un article ne peut être modifié ou supprimé que par son auteur, ou par un membre du groupe `admin` ou `superadmin`. La règle est définie dans `app/Helpers/article_helper.php` (`peut_modifier_article()`). Les articles créés avant l'ajout de cette colonne n'ont pas d'auteur (« auteur inconnu ») : seuls les administrateurs peuvent les modifier.
+
+Si un utilisateur est supprimé, ses articles restent en ligne sans auteur (`ON DELETE SET NULL`).
+
+Donner les droits d'administration à un utilisateur :
+
+```bash
+php spark shield:user addgroup -n nom_utilisateur -g admin
+```
+
 L'API `POST /api/articles` exige un jeton d'accès Shield, transmis dans l'en-tête `Authorization: Bearer <jeton>`. Un jeton se génère en PHP pour un utilisateur donné : `$user->generateAccessToken('nom')->raw_token` (le jeton brut n'est visible qu'au moment de sa création).
 Changer le mot de passe `ci_password` avant toute utilisation hors développement.
 

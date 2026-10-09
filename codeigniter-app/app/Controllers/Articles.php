@@ -11,7 +11,7 @@ class Articles extends BaseController
     {
         return view('articles/index', [
             'titrePage' => 'Articles',
-            'articles'  => (new ArticleModel())->orderBy('id', 'DESC')->findAll(),
+            'articles'  => (new ArticleModel())->avecAuteur()->orderBy('articles.id', 'DESC')->findAll(),
         ]);
     }
 
@@ -34,6 +34,7 @@ class Articles extends BaseController
     {
         $model = new ArticleModel();
         $id    = $model->insert([
+            'user_id' => auth()->id(),
             'titre'   => $this->request->getPost('titre'),
             'contenu' => $this->request->getPost('contenu'),
         ]);
@@ -49,6 +50,10 @@ class Articles extends BaseController
     {
         $article = $this->trouver($id);
 
+        if (! peut_modifier_article($article)) {
+            return $this->refuser($id);
+        }
+
         return view('articles/edit', [
             'titrePage' => 'Modifier : ' . $article['titre'],
             'article'   => $article,
@@ -57,7 +62,9 @@ class Articles extends BaseController
 
     public function update(int $id)
     {
-        $this->trouver($id);
+        if (! peut_modifier_article($this->trouver($id))) {
+            return $this->refuser($id);
+        }
 
         $model = new ArticleModel();
         $ok    = $model->update($id, [
@@ -74,7 +81,10 @@ class Articles extends BaseController
 
     public function delete(int $id)
     {
-        $this->trouver($id);
+        if (! peut_modifier_article($this->trouver($id))) {
+            return $this->refuser($id);
+        }
+
         (new ArticleModel())->delete($id);
 
         return redirect()->to('articles')->with('message', 'Article supprimé.');
@@ -82,12 +92,18 @@ class Articles extends BaseController
 
     private function trouver(int $id): array
     {
-        $article = (new ArticleModel())->find($id);
+        $article = (new ArticleModel())->avecAuteur()->find($id);
 
         if ($article === null) {
             throw PageNotFoundException::forPageNotFound('Article introuvable.');
         }
 
         return $article;
+    }
+
+    private function refuser(int $id)
+    {
+        return redirect()->to('articles/' . $id)
+            ->with('erreur', 'Vous ne pouvez modifier ou supprimer que vos propres articles.');
     }
 }
