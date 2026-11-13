@@ -17,7 +17,7 @@
         .erreurs { background: #fdecea; border: 1px solid #f5c2bd; padding: 10px; border-radius: 4px; }
         ul.erreurs { padding-left: 30px; }
         label { display: block; margin: 16px 0 4px; font-weight: 600; }
-        input[type=text], textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
+        input[type=text], input[type=email], input[type=password], textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
         textarea { min-height: 180px; }
         .compte { display: flex; gap: 12px; align-items: center; }
         .compte a:not(.bouton) { color: #dd4814; }
@@ -25,6 +25,8 @@
         .actions form { margin: 0; }
         .bouton.secondaire { background: #555; }
         .bouton.danger { background: #b3261e; }
+        .carte-auth { max-width: 420px; margin: 0 auto; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; padding: 8px 24px 16px; }
+        label.case { display: flex; gap: 8px; align-items: center; font-weight: normal; }
         .contenu { white-space: pre-line; line-height: 1.6; }
     </style>
 </head>

@@ -121,6 +121,8 @@ L'authentification repose sur [CodeIgniter Shield](https://shield.codeigniter.co
 - Création, modification, suppression : réservées aux utilisateurs connectés (filtre `session` dans `app/Config/Routes.php`). Un visiteur est redirigé vers la page de connexion.
 - Pages fournies par Shield : `/register` (inscription), `/login` (connexion), `/logout` (déconnexion). Elles sont en français (`defaultLocale = 'fr'` dans `app/Config/App.php`).
 - Configuration : `app/Config/Auth.php` (redirections, règles de mot de passe, activation par e-mail désactivée par défaut).
+- Les pages de connexion et d'inscription utilisent la mise en page de l'application : vues `app/Views/auth/login.php` et `app/Views/auth/register.php`, déclarées dans `$views` de `app/Config/Auth.php`.
+- La connexion par lien magique (« mot de passe oublié ») est désactivée (`$allowMagicLinkLogins = false`), car elle envoie un e-mail et aucun envoi n'est configuré. Pour la réactiver, configurer d'abord `app/Config/Email.php`.
 
 Créer un utilisateur en ligne de commande : `php spark shield:user create`.
 
@@ -184,6 +186,7 @@ composer test
 Les tests utilisent une base SQLite en mémoire, recréée pour chaque test (configuration `tests` dans `app/Config/Database.php`). Ils ne nécessitent pas MySQL et ne touchent jamais à la base de développement. L'extension PHP `sqlite3` est requise (`sudo apt install php-sqlite3`).
 
 - `tests/feature/ArticlesTest.php` : pages HTML (lecture publique, connexion obligatoire pour écrire, protection CSRF, validation, droits de l'auteur et des administrateurs).
+- `tests/feature/AuthPagesTest.php` : pages de connexion et d'inscription (mise en page, inscription, mauvais mot de passe).
 - `tests/feature/ApiArticlesTest.php` : API JSON (lecture publique, jeton d'accès obligatoire pour créer, auteur enregistré, validation).
 
 Afficher chaque test avec son nom : `vendor/bin/phpunit --no-coverage --testdox`.
