@@ -72,3 +72,29 @@ $routes->group('administration', ['filter' => 'session', 'namespace' => 'App\Con
     $routes->get('journal', 'Journal::index', ['filter' => 'droit:audit.consulter']);
 });
 
+// Référentiel du matériel (lot 1) : consultation par tout utilisateur connecté ;
+// écriture vérifiée par filière ou par force dans les contrôleurs et dans la base
+$routes->group('referentiel', ['filter' => 'session', 'namespace' => 'App\Controllers\Referentiel'], static function ($routes) {
+    $routes->get('/', static fn () => redirect()->to('referentiel/articles'));
+    $routes->get('articles', 'Articles::index');
+    $routes->get('articles/(:num)', 'Articles::show/$1');
+    $routes->get('filieres', 'Filieres::index');
+    $routes->get('filieres/(:num)/categories', 'Categories::index/$1');
+
+    $routes->group('', ['filter' => 'droit:referentiel.gerer'], static function ($routes) {
+        foreach (['articles' => 'Articles', 'filieres' => 'Filieres', 'categories' => 'Categories'] as $chemin => $controleur) {
+            $routes->get("{$chemin}/new", "{$controleur}::new");
+            $routes->post($chemin, "{$controleur}::create");
+            $routes->get("{$chemin}/(:num)/edit", "{$controleur}::edit/$1");
+            $routes->post("{$chemin}/(:num)", "{$controleur}::update/$1");
+        }
+    });
+
+    $routes->group('', ['filter' => 'droit:referentiel.fiche_force'], static function ($routes) {
+        $routes->get('fiches/new', 'FichesForce::new');
+        $routes->post('fiches', 'FichesForce::create');
+        $routes->get('fiches/(:num)/edit', 'FichesForce::edit/$1');
+        $routes->post('fiches/(:num)', 'FichesForce::update/$1');
+    });
+});
+

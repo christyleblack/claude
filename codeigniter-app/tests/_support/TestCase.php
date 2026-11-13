@@ -27,6 +27,26 @@ abstract class TestCase extends CIUnitTestCase
     }
 
     /**
+     * Exécute du SQL comme le ferait l'application pour cet utilisateur, sans aucun
+     * contrôle PHP : seul le cloisonnement de la base (rôle gestion_app, RLS) s'applique.
+     */
+    protected function executerCommeApplication(int $utilisateurId, string $sql, array $valeurs = []): array
+    {
+        $db = db_connect();
+        $db->query('SET ROLE gestion_app');
+        $db->query("SELECT set_config('app.utilisateur_id', ?, false)", [(string) $utilisateurId]);
+
+        try {
+            $resultat = $db->query($sql, $valeurs);
+
+            // Une requête d'écriture renvoie un booléen, pas un jeu de résultats
+            return is_bool($resultat) ? [] : $resultat->getResultArray();
+        } finally {
+            $this->redevenirProprietaire();
+        }
+    }
+
+    /**
      * À appeler après une requête simulée interrompue par une exception (page 404…),
      * avant de relire la base pour vérifier qu'elle n'a pas changé.
      */

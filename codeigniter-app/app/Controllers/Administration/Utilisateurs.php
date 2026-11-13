@@ -6,6 +6,7 @@ use App\Controllers\GestionController;
 use App\Models\Droits\AffectationModel;
 use App\Models\Droits\RoleModel;
 use App\Models\Organisation\EntiteModel;
+use App\Models\Referentiel\FiliereModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\Shield\Models\UserModel;
@@ -48,6 +49,7 @@ class Utilisateurs extends GestionController
             'affectations' => (new AffectationModel())->deUtilisateur($id),
             'roles'        => (new RoleModel())->options(),
             'entites'      => (new EntiteModel())->options(),
+            'filieres'     => (new FiliereModel())->options(),
         ]);
     }
 
@@ -71,6 +73,7 @@ class Utilisateurs extends GestionController
             'utilisateur_id' => $id,
             'role_id'        => $this->champ('role_id'),
             'entite_id'      => $entiteId,
+            'filiere_id'     => $this->champ('filiere_id'),
             'date_debut'     => $this->champ('date_debut'),
             'date_fin'       => $this->champ('date_fin'),
             'cree_par'       => auth()->id(),
