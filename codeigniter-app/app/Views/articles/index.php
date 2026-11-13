@@ -1,6 +1,9 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('contenu') ?>
+<?php if (auth()->loggedIn()): ?>
+    <p><a class="bouton" href="<?= site_url('articles/new') ?>">Nouvel article</a></p>
+<?php endif ?>
 <?php if ($articles === []): ?>
     <p>Aucun article pour le moment.
     <?php if (auth()->loggedIn()): ?><a href="<?= site_url('articles/new') ?>">Écrire le premier</a>.<?php endif ?>

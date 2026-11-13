@@ -129,6 +129,35 @@ Pages HTML (vues dans `app/Views/articles`, mise en page commune dans `app/Views
 
 API JSON (sans CSRF) : `GET /api/articles` (public) et `POST /api/articles` (champs `titre`, `contenu`, jeton d'accès requis, voir plus bas).
 
+## Module Organisation (lot 1)
+
+Référentiel des entités, des forces, des sites et des emplacements de stockage (exigence REF-06, règles RG-01 à RG-03). Modèle de données : `docs/lot1-modele-de-donnees.md`, section 2.
+
+| Adresse | Rôle |
+|---------|------|
+| `/organisation/entites` | arbre des entités, hiérarchique ou logistique (`?axe=logistique`) |
+| `/organisation/entites/{id}` | fiche d'une entité : ses deux chaînes, ses subordonnées, ses sites |
+| `/organisation/forces` | forces et paramètres d'autonomie de leur direction du matériel |
+| `/organisation/types` | types d'entités (ajouter un niveau d'organisation sans développement) |
+| `/organisation/sites/{id}` | site et ses emplacements de stockage |
+
+- **Droits** : consultation par tout utilisateur connecté ; création et modification réservées à la permission `organisation.gerer` (groupes `admin` et `superadmin`, `app/Config/AuthGroups.php`). Le cloisonnement par périmètre viendra avec le module Utilisateurs et droits.
+- **Garanties apportées par la base** (migration `CreerOrganisation`) : les chemins `ltree` des deux arbres et la force de chaque entité sont calculés par des déclencheurs PostgreSQL et ne peuvent pas être saisis ; un déplacement se propage à toute la branche ; les cycles sont refusés ; un emplacement ne peut être contenu que dans un emplacement du même site.
+- **Force d'une entité** : celle de son ancêtre hiérarchique le plus proche qui est la racine d'une force. La DCMA et ses services n'appartiennent à aucune force (RG-02).
+- **Pas de suppression** : une entité, un site ou un emplacement se désactive.
+
+Charger le jeu de démonstration (**données fictives** : DCMA, ses six services, les sept forces, une unité et un dépôt par force) dans une base vide :
+
+```bash
+php spark db:seed OrganisationSeeder
+```
+
+Donner à un utilisateur le droit de modifier l'organisation :
+
+```bash
+php spark shield:user addgroup -n nom_utilisateur -g admin
+```
+
 ## Utilisateurs (CodeIgniter Shield)
 
 L'authentification repose sur [CodeIgniter Shield](https://shield.codeigniter.com/), le module officiel. Ses tables (`users`, `auth_identities`, etc.) sont créées par `php spark migrate --all` : l'option `--all` est indispensable, car les migrations de Shield ne sont pas dans le dossier `app/`.
@@ -202,6 +231,8 @@ composer test
 Les tests utilisent la base PostgreSQL `gestion_materiel_tests` (groupe `tests` dans `app/Config/Database.php`, identifiants dans `.env`), recréée pour chaque test. Ils ne touchent jamais à la base de développement. Sur GitHub Actions, un serveur PostgreSQL 16 est démarré pour l'occasion.
 
 - `tests/feature/ArticlesTest.php` : pages HTML (lecture publique, connexion obligatoire pour écrire, protection CSRF, validation, droits de l'auteur et des administrateurs).
+- `tests/feature/Organisation/ArbresTest.php` : garanties de la base (chemins des deux arbres, propagation des déplacements, refus des cycles, force déduite, emplacements).
+- `tests/feature/Organisation/PagesTest.php` : pages du module Organisation (consultation, permission `organisation.gerer`, création, refus des cycles et des doublons, forces, sites, emplacements).
 - `tests/feature/AuthPagesTest.php` : pages de connexion et d'inscription (mise en page, inscription, mauvais mot de passe).
 - `tests/feature/ApiArticlesTest.php` : API JSON (lecture publique, jeton d'accès obligatoire pour créer, auteur enregistré, validation).
 

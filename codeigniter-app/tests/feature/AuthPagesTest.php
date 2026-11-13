@@ -39,7 +39,7 @@ final class AuthPagesTest extends CIUnitTestCase
 
         $result->assertOK();
         $result->assertSee('<title>Se connecter</title>');
-        $result->assertSee('Mes articles');
+        $result->assertSee('Gestion du matériel');
         $result->assertSee('name="email"');
         $result->assertSee('name="password"');
         $result->assertSee('name="remember"');
@@ -52,7 +52,7 @@ final class AuthPagesTest extends CIUnitTestCase
         $result = $this->get('register');
 
         $result->assertOK();
-        $result->assertSee('Mes articles');
+        $result->assertSee('Gestion du matériel');
         $result->assertSee('name="username"');
         $result->assertSee('name="password_confirm"');
         $result->assertDontSee('bootstrap');
