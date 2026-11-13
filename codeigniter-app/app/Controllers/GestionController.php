@@ -14,6 +14,13 @@ use CodeIgniter\Model;
 abstract class GestionController extends BaseController
 {
     /**
+     * Messages lisibles pour les contraintes de la base, par nom de contrainte.
+     *
+     * @var array<string, string>
+     */
+    protected array $contraintes = [];
+
+    /**
      * Ligne trouvée, ou page 404.
      */
     protected function trouver(Model $model, int $id): array
@@ -43,6 +50,17 @@ abstract class GestionController extends BaseController
         return trim((string) $this->request->getPost($nom));
     }
 
+    private function contrainteEnCause(string $message): ?string
+    {
+        foreach (array_keys($this->contraintes) as $nom) {
+            if (str_contains($message, '"' . $nom . '"')) {
+                return $nom;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Enregistre via le modèle ; en cas d'erreur de validation ou de refus
      * par la base (cycle…), renvoie au formulaire avec les messages.
@@ -57,8 +75,9 @@ abstract class GestionController extends BaseController
             // Contraintes garanties par la base (voir la migration CreerOrganisation)
             $message = match (true) {
                 // Règles métier signalées par la base elle-même (messages en français des déclencheurs)
-                (bool) preg_match('/(Cycle refusé|Délégation refusée)[^\n]*/u', $e->getMessage(), $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
-                str_contains($e->getMessage(), 'row-level security') => 'Enregistrement refusé : il placerait l\'élément hors de votre périmètre.',
+                (bool) preg_match('/(Cycle refusé|Délégation refusée|Mode de suivi refusé)[^\n]*/u', $e->getMessage(), $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
+                str_contains($e->getMessage(), 'row-level security') => 'Enregistrement refusé : il sortirait de votre périmètre ou de vos droits.',
+                ($nom = $this->contrainteEnCause($e->getMessage())) !== null => $this->contraintes[$nom],
                 default => 'Enregistrement refusé par la base de données : vérifiez les valeurs saisies.',
             };
 

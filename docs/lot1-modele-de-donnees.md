@@ -133,7 +133,7 @@ classDiagram
 - **Délégation** : transfert temporaire d'une affectation à un autre utilisateur, daté et tracé (règle 4.2-5).
 - **Cloisonnement en base** (règle 4.2-6) : les tables métier sont protégées par la sécurité au niveau des lignes de PostgreSQL (*Row Level Security*). À chaque requête, l'application transmet l'utilisateur connecté à la base, et les politiques de sécurité ne laissent passer que les lignes de son périmètre. Un oubli dans le code PHP ne suffit donc pas à exposer des données.
 - **Journal d'audit** (ADM-03, section 5 « Traçabilité ») : en insertion seule, comme le journal des mouvements.
-- **Mise en œuvre** (module Utilisateurs et droits) : la portée d'un rôle est *nationale* ou *entité* ; une affectation ou une délégation peut être **révoquée** avant terme (date et auteur conservés). Le périmètre suit l'arbre **hiérarchique**. → **H-08**. La restriction d'une affectation à une filière (H-02) sera ajoutée avec le référentiel, qui crée la table des filières.
+- **Mise en œuvre** (module Utilisateurs et droits) : la portée d'un rôle est *nationale* ou *entité* ; une affectation ou une délégation peut être **révoquée** avant terme (date et auteur conservés). Le périmètre suit l'arbre **hiérarchique**. → **H-08**. Une affectation peut être limitée à une filière (H-02) depuis le module Référentiel.
 - **Séparation des tâches** (règle 4.2-4, RG-32) : vérifiée par l'application et doublée d'une contrainte en base là où c'est possible (par exemple : le valideur d'un inventaire est différent du compteur).
 
 ## 4. Référentiel du matériel (REF-01 à REF-05, RG-05 à RG-09)
@@ -194,6 +194,7 @@ classDiagram
 - **Mode de suivi** (REF-04, RG-06, RG-07) : un seul par article. Les engins roulants (motos comprises), armes et matériels optiques sont suivis par numéro de série, les munitions par lot, les carburants en quantité exprimée dans une unité de volume. → **H-03**, **H-04**
 - **Sensibilité** (REF-05) : détermine les règles de traçabilité renforcées (signature nominative, inventaires plus fréquents), précisées au lot 3 pour le SAMO.
 - **Matériel sérialisé** : chaque exemplaire (une arme, un engin) avec son numéro de série et son état (STK-05). Sa position et son détenteur ne sont pas saisis : ils découlent de son dernier mouvement (RG-14).
+- **Mise en œuvre** (module Référentiel) : unités de gestion en table (unité, litre, mètre cube, kilogramme, tonne) ; RG-07 appliquée par trois contraintes (armement → série, munition → lot, série → unité) et par un mode de suivi que chaque catégorie peut imposer ; écriture contrôlée par la base selon la filière (`referentiel.gerer`) ou la force (`referentiel.fiche_force`). Les **lots** et les **matériels sérialisés** seront créés par les mouvements d'entrée (module Stocks et mouvements).
 - **Désactivation** (REF-01) : un article n'est jamais supprimé, il est désactivé, car des mouvements y font référence.
 
 ## 5. Stocks et mouvements (STK-01 à STK-06, RG-10 à RG-14)

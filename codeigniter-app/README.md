@@ -161,12 +161,34 @@ Donner à un utilisateur le droit de modifier l'organisation : lui affecter un r
 php spark droits:affecter nom_utilisateur ADMIN_FONCTIONNEL DCMA
 ```
 
+## Module Référentiel du matériel (lot 1)
+
+Référentiel unique national (REF-01 à REF-05, RG-05 à RG-09). Modèle de données : `docs/lot1-modele-de-donnees.md`, section 4.
+
+| Adresse | Rôle |
+|---------|------|
+| `/referentiel/articles` | recherche d'articles (désignation, codification, filière, catégorie, suivi, sensibilité) |
+| `/referentiel/articles/{id}` | fiche d'un article et fiches propres à chaque force |
+| `/referentiel/filieres` | filières et service gestionnaire |
+| `/referentiel/filieres/{id}/categories` | arborescence des catégories d'une filière |
+
+- **Filière** : gérée par un seul service central (RG-05) ; la filière d'un article découle de sa catégorie.
+- **Mode de suivi** (RG-06, RG-07) : quantité, lot ou numéro de série. La base impose : armement par numéro de série, munitions par lot, numéro de série à l'unité ; une catégorie peut en plus imposer le mode de ses articles.
+- **Fiche propre à une force** (REF-02, RG-09) : code et désignation locaux, attributs libres « nom = valeur » ; au plus une par force.
+- **Unités de gestion** : unité, litre, mètre cube, kilogramme, tonne (fixées par migration).
+- **Droits** : tout utilisateur connecté consulte le référentiel. Gérer les articles et les catégories exige `referentiel.gerer` au niveau national, éventuellement **limité à une filière** par l'affectation ; gérer les filières exige une affectation non limitée ; les fiches d'une force exigent `referentiel.fiche_force` sur cette force. Ces règles sont aussi appliquées par la base (*Row Level Security* sur l'écriture). Rien ne se supprime : un article se désactive.
+- **Lots et matériels sérialisés** : ils seront créés par les mouvements d'entrée (module Stocks et mouvements).
+
+```bash
+php spark db:seed ReferentielSeeder   # trois filières du cahier des charges, catégories, articles d'exemple (fictifs)
+```
+
 ## Utilisateurs et droits (lot 1, section 4)
 
 CodeIgniter Shield gère les comptes et la connexion ; **les droits viennent des affectations** stockées en base :
 
-- **Rôle** (RBAC) : un ensemble de permissions (`organisation.gerer`, `administration.utilisateurs`, `administration.roles`, `audit.consulter`) et une portée, *nationale* (toute l'organisation) ou *entité* (l'entité d'affectation et ses subordonnées hiérarchiques). Rôles et permissions se paramètrent dans Administration › Rôles (ADM-02).
-- **Affectation** (ABAC, RG-04) : un rôle exercé sur une entité, du … au … ; un utilisateur peut en avoir plusieurs. Une affectation se révoque, elle ne se supprime pas.
+- **Rôle** (RBAC) : un ensemble de permissions (`organisation.gerer`, `referentiel.gerer`, `referentiel.fiche_force`, `administration.utilisateurs`, `administration.roles`, `audit.consulter`) et une portée, *nationale* (toute l'organisation) ou *entité* (l'entité d'affectation et ses subordonnées hiérarchiques). Rôles et permissions se paramètrent dans Administration › Rôles (ADM-02).
+- **Affectation** (ABAC, RG-04) : un rôle exercé sur une entité, du … au …, éventuellement limité à une filière (H-02) ; un utilisateur peut en avoir plusieurs. Une affectation se révoque, elle ne se supprime pas.
 - **Délégation** (règle 4.2-5) : le titulaire d'une affectation la confie temporairement à un autre utilisateur (page « Mes droits »), avec un motif ; la période doit tenir dans celle de l'affectation, l'auto-délégation est refusée par la base.
 - **Sans affectation active, un utilisateur ne voit aucune donnée.**
 
@@ -187,7 +209,7 @@ Expiration après 30 minutes d'inactivité (`session.expiration` dans `.env`) ; 
 ### Mise en route
 
 ```bash
-php spark db:seed DroitsSeeder      # les dix profils de la section 4.1, modifiables ensuite
+php spark db:seed DroitsSeeder      # les dix profils de la section 4.1 ; relancé, complète leurs permissions par défaut
 php spark droits:affecter <identifiant> ADMIN_SYSTEME DCMA       # premier administrateur
 php spark droits:affecter <identifiant> ADMIN_FONCTIONNEL DCMA   # gestion de l'organisation
 ```
@@ -269,6 +291,8 @@ Les tests utilisent la base PostgreSQL `gestion_materiel_tests` (groupe `tests` 
 - `tests/feature/ArticlesTest.php` : pages HTML (lecture publique, connexion obligatoire pour écrire, protection CSRF, validation, droits de l'auteur et des administrateurs).
 - `tests/feature/Organisation/ArbresTest.php` : garanties de la base (chemins des deux arbres, propagation des déplacements, refus des cycles, force déduite, emplacements).
 - `tests/feature/Organisation/PagesTest.php` : pages du module Organisation (consultation, permission `organisation.gerer`, création, refus des cycles et des doublons, forces, sites, emplacements).
+- `tests/feature/Referentiel/ReglesTest.php` : règles RG-05 à RG-09 garanties par la base.
+- `tests/feature/Referentiel/PagesTest.php` : consultation, gestion par filière (interface et base), fiches propres aux forces, affectation limitée à une filière.
 - `tests/feature/Droits/CloisonnementTest.php` : critère de recette 7.3-2, prouvé par l'interface et directement en base (lecture, écriture, suppression, affectations terminées, à venir ou révoquées, délégations, journal immuable).
 - `tests/feature/Droits/AdministrationTest.php` : affectations, révocation, paramétrage des rôles, journal des connexions, délégations.
 - `tests/feature/AuthPagesTest.php` : pages de connexion et d'inscription (mise en page, inscription, mauvais mot de passe).

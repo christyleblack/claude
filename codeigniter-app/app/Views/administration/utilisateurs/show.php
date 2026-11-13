@@ -14,7 +14,7 @@
         <tbody>
         <?php foreach ($affectations as $a): ?>
             <tr>
-                <td><?= esc($a['role']) ?><?= $a['portee'] === 'nationale' ? ' <span class="badge">nationale</span>' : '' ?></td>
+                <td><?= esc($a['role']) ?><?= $a['portee'] === 'nationale' ? ' <span class="badge">nationale</span>' : '' ?><?= $a['filiere'] !== null ? ' <span class="badge">filière ' . esc($a['filiere']) . '</span>' : '' ?></td>
                 <td><?= $a['entite'] === null ? '<em>hors de votre périmètre</em>' : esc($a['entite']) ?></td>
                 <td><?= esc($a['date_debut']) ?></td>
                 <td><?= esc($a['date_fin'] ?? '—') ?></td>
@@ -41,6 +41,7 @@
         <div>
             <?= view('organisation/_select', ['nom' => 'role_id', 'libelle' => 'Rôle', 'options' => $roles, 'valeur' => null]) ?>
             <?= view('organisation/_select', ['nom' => 'entite_id', 'libelle' => 'Entité (le périmètre inclut ses subordonnées)', 'options' => $entites, 'valeur' => null]) ?>
+            <?= view('organisation/_select', ['nom' => 'filiere_id', 'libelle' => 'Limitée à la filière (facultatif)', 'options' => $filieres, 'valeur' => null, 'vide' => true]) ?>
         </div>
         <div>
             <label for="date_debut">Début</label>

@@ -41,6 +41,34 @@ class Droits
     }
 
     /**
+     * Permission au niveau national sur une filière : par une affectation non restreinte,
+     * ou restreinte à cette filière (H-02). Sans filière : affectation non restreinte exigée.
+     */
+    public function peutFiliere(string $permission, ?int $filiereId = null): bool
+    {
+        if (! auth()->loggedIn()) {
+            return false;
+        }
+
+        $cle = 'filiere|' . $permission . '|' . ($filiereId ?? '');
+
+        return $this->cache[$cle] ??= $this->db->query(
+            'SELECT droits_peut_filiere(?, ?) AS ok',
+            [$permission, $filiereId],
+        )->getRow()->ok === 't';
+    }
+
+    /**
+     * Permission sur une force (sur son entité racine).
+     */
+    public function peutForce(string $permission, int $forceId): bool
+    {
+        $racine = $this->db->table('force')->select('entite_racine_id')->where('id', $forceId)->get()->getRow();
+
+        return $racine !== null && $this->peut($permission, (int) $racine->entite_racine_id);
+    }
+
+    /**
      * Affectations actives de l'utilisateur connecté (directes et reçues par délégation).
      */
     public function affectationsActives(): array
