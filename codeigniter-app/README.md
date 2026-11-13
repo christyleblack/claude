@@ -82,6 +82,9 @@ sudo -u postgres psql
 CREATE ROLE ci_user LOGIN PASSWORD 'ci_password';
 CREATE DATABASE gestion_materiel OWNER ci_user ENCODING 'UTF8' TEMPLATE template0;
 CREATE DATABASE gestion_materiel_tests OWNER ci_user ENCODING 'UTF8' TEMPLATE template0;
+-- Rôle sous lequel l'application lit et écrit, soumis au cloisonnement (voir « Utilisateurs et droits »)
+CREATE ROLE gestion_app NOLOGIN;
+GRANT gestion_app TO ci_user;
 \q
 ```
 
@@ -141,7 +144,7 @@ Référentiel des entités, des forces, des sites et des emplacements de stockag
 | `/organisation/types` | types d'entités (ajouter un niveau d'organisation sans développement) |
 | `/organisation/sites/{id}` | site et ses emplacements de stockage |
 
-- **Droits** : consultation par tout utilisateur connecté ; création et modification réservées à la permission `organisation.gerer` (groupes `admin` et `superadmin`, `app/Config/AuthGroups.php`). Le cloisonnement par périmètre viendra avec le module Utilisateurs et droits.
+- **Droits** : chacun ne voit que les entités de son périmètre ; créer ou modifier exige la permission `organisation.gerer` sur l'entité concernée (et au niveau national pour les forces, les types d'entités et les entités racines). Voir « Utilisateurs et droits ».
 - **Garanties apportées par la base** (migration `CreerOrganisation`) : les chemins `ltree` des deux arbres et la force de chaque entité sont calculés par des déclencheurs PostgreSQL et ne peuvent pas être saisis ; un déplacement se propage à toute la branche ; les cycles sont refusés ; un emplacement ne peut être contenu que dans un emplacement du même site.
 - **Force d'une entité** : celle de son ancêtre hiérarchique le plus proche qui est la racine d'une force. La DCMA et ses services n'appartiennent à aucune force (RG-02).
 - **Pas de suppression** : une entité, un site ou un emplacement se désactive.
@@ -152,11 +155,44 @@ Charger le jeu de démonstration (**données fictives** : DCMA, ses six services
 php spark db:seed OrganisationSeeder
 ```
 
-Donner à un utilisateur le droit de modifier l'organisation :
+Donner à un utilisateur le droit de modifier l'organisation : lui affecter un rôle qui a la permission `organisation.gerer`, par exemple :
 
 ```bash
-php spark shield:user addgroup -n nom_utilisateur -g admin
+php spark droits:affecter nom_utilisateur ADMIN_FONCTIONNEL DCMA
 ```
+
+## Utilisateurs et droits (lot 1, section 4)
+
+CodeIgniter Shield gère les comptes et la connexion ; **les droits viennent des affectations** stockées en base :
+
+- **Rôle** (RBAC) : un ensemble de permissions (`organisation.gerer`, `administration.utilisateurs`, `administration.roles`, `audit.consulter`) et une portée, *nationale* (toute l'organisation) ou *entité* (l'entité d'affectation et ses subordonnées hiérarchiques). Rôles et permissions se paramètrent dans Administration › Rôles (ADM-02).
+- **Affectation** (ABAC, RG-04) : un rôle exercé sur une entité, du … au … ; un utilisateur peut en avoir plusieurs. Une affectation se révoque, elle ne se supprime pas.
+- **Délégation** (règle 4.2-5) : le titulaire d'une affectation la confie temporairement à un autre utilisateur (page « Mes droits »), avec un motif ; la période doit tenir dans celle de l'affectation, l'auto-délégation est refusée par la base.
+- **Sans affectation active, un utilisateur ne voit aucune donnée.**
+
+### Cloisonnement dans la base (règle 4.2-6)
+
+À chaque requête HTTP, le filtre global `ContexteDroits` fait passer la connexion sous le rôle PostgreSQL **`gestion_app`** et transmet l'utilisateur connecté à la base. Des politiques de sécurité au niveau des lignes (*Row Level Security*) sur `entite`, `site` et `emplacement` ne laissent alors lire ou écrire que les lignes du périmètre de ses affectations actives : une requête PHP qui oublierait un filtre ne peut rien exposer. Le rôle `gestion_app` n'a pas non plus le droit de supprimer dans le référentiel ni de modifier le journal.
+
+Le propriétaire des tables (migrations, commandes `spark`) n'est pas soumis au cloisonnement. **En production**, l'application doit se connecter directement avec un compte de connexion qui a uniquement le rôle `gestion_app`, et les migrations doivent être lancées avec un autre compte (réglage `droits.roleApplication` dans `app/Config/Droits.php`).
+
+### Journal d'audit (ADM-03)
+
+Toute modification des tables protégées est enregistrée par un déclencheur PostgreSQL (auteur, avant / après), ainsi que les connexions, déconnexions et échecs de connexion. Le journal est en insertion seule, y compris pour le propriétaire des tables. Consultation : Administration › Journal d'audit (permission `audit.consulter`, portée nationale).
+
+### Sessions
+
+Expiration après 30 minutes d'inactivité (`session.expiration` dans `.env`) ; « se souvenir de moi » est désactivé car il contournerait cette expiration.
+
+### Mise en route
+
+```bash
+php spark db:seed DroitsSeeder      # les dix profils de la section 4.1, modifiables ensuite
+php spark droits:affecter <identifiant> ADMIN_SYSTEME DCMA       # premier administrateur
+php spark droits:affecter <identifiant> ADMIN_FONCTIONNEL DCMA   # gestion de l'organisation
+```
+
+Les identifiants Shield n'acceptent que des lettres, des chiffres et des points.
 
 ## Utilisateurs (CodeIgniter Shield)
 
@@ -233,6 +269,8 @@ Les tests utilisent la base PostgreSQL `gestion_materiel_tests` (groupe `tests` 
 - `tests/feature/ArticlesTest.php` : pages HTML (lecture publique, connexion obligatoire pour écrire, protection CSRF, validation, droits de l'auteur et des administrateurs).
 - `tests/feature/Organisation/ArbresTest.php` : garanties de la base (chemins des deux arbres, propagation des déplacements, refus des cycles, force déduite, emplacements).
 - `tests/feature/Organisation/PagesTest.php` : pages du module Organisation (consultation, permission `organisation.gerer`, création, refus des cycles et des doublons, forces, sites, emplacements).
+- `tests/feature/Droits/CloisonnementTest.php` : critère de recette 7.3-2, prouvé par l'interface et directement en base (lecture, écriture, suppression, affectations terminées, à venir ou révoquées, délégations, journal immuable).
+- `tests/feature/Droits/AdministrationTest.php` : affectations, révocation, paramétrage des rôles, journal des connexions, délégations.
 - `tests/feature/AuthPagesTest.php` : pages de connexion et d'inscription (mise en page, inscription, mauvais mot de passe).
 - `tests/feature/ApiArticlesTest.php` : API JSON (lecture publique, jeton d'accès obligatoire pour créer, auteur enregistré, validation).
 

@@ -43,6 +43,11 @@ jobs:
           extensions: intl, mbstring, pgsql
           coverage: none
 
+      - name: Créer le rôle applicatif soumis au cloisonnement
+        run: |
+          PGPASSWORD=ci_password psql -h localhost -U ci_user -d gestion_materiel_tests \
+            -c "CREATE ROLE gestion_app NOLOGIN" -c "GRANT gestion_app TO ci_user"
+
       - name: Installer les dépendances
         run: composer install --no-interaction --no-progress --prefer-dist
 

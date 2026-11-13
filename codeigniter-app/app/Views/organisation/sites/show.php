@@ -2,7 +2,7 @@
 
 <?= $this->section('contenu') ?>
 <?= view('organisation/_onglets', ['onglet' => 'entites']) ?>
-<?php $peutGerer = auth()->user()->can('organisation.gerer') ?>
+<?php $peutGerer = service('droits')->peut('organisation.gerer', $site['entite_id']) ?>
 
 <p class="fil"><a href="<?= site_url('organisation/entites/' . $entite['id']) ?>"><?= esc($entite['nom']) ?></a> › site</p>
 <h2><?= esc($site['nom']) ?> <span class="badge"><?= esc($site['code']) ?></span>

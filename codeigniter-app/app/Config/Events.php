@@ -55,3 +55,21 @@ Events::on('pre_system', static function (): void {
         }
     }
 });
+
+/*
+ * Journal d'audit des connexions (cahier des charges, section 5 « Traçabilité »).
+ * Les modifications de données sont journalisées par la base elle-même (déclencheurs).
+ */
+$journaliser = static function (string $action, ?int $utilisateurId, array $details = []): void {
+    db_connect()->table('journal_audit')->insert([
+        'utilisateur_id' => $utilisateurId,
+        'action'         => $action,
+        'objet_type'     => 'session',
+        'details'        => $details === [] ? null : json_encode($details, JSON_UNESCAPED_UNICODE),
+        'adresse_ip'     => service('request')->getIPAddress(),
+    ]);
+};
+Events::on('login', static fn ($user) => $journaliser('CONNEXION', (int) $user->id));
+Events::on('logout', static fn ($user) => $journaliser('DECONNEXION', (int) $user->id));
+Events::on('failedLogin', static fn (array $identifiants) => $journaliser('ECHEC_CONNEXION', null, ['email' => $identifiants['email'] ?? null]));
+

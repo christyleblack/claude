@@ -8,7 +8,7 @@
 <div class="onglets">
     <a class="bouton <?= $axe === 'hierarchique' ? '' : 'secondaire' ?>" href="<?= site_url('organisation/entites?axe=hierarchique') ?>">Arbre hiérarchique</a>
     <a class="bouton <?= $axe === 'logistique' ? '' : 'secondaire' ?>" href="<?= site_url('organisation/entites?axe=logistique') ?>">Arbre logistique</a>
-    <?php if (auth()->user()->can('organisation.gerer')): ?>
+    <?php if (service('droits')->peut('organisation.gerer')): ?>
         <a class="bouton" href="<?= site_url('organisation/entites/new') ?>">Nouvelle entité</a>
     <?php endif ?>
 </div>
@@ -20,7 +20,7 @@
 </p>
 
 <?php if ($entites === []): ?>
-    <p>Aucune entité pour le moment.</p>
+    <p>Aucune entité dans votre périmètre. Si vous devriez en voir, demandez une affectation à un administrateur.</p>
 <?php else: ?>
     <table>
         <thead><tr><th>Entité</th><th>Code</th><th>Type</th><th>Force</th></tr></thead>

@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\ArticleModel;
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\Shield\Models\UserModel;
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 
@@ -14,7 +14,7 @@ use CodeIgniter\Test\FeatureTestTrait;
  *
  * @internal
  */
-final class ApiArticlesTest extends CIUnitTestCase
+final class ApiArticlesTest extends TestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;

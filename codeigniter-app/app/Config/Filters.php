@@ -34,6 +34,8 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'contexte'      => \App\Filters\ContexteDroits::class,
+        'droit'         => \App\Filters\Droit::class,
     ];
 
     /**
@@ -72,11 +74,14 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            // Cloisonnement : rôle PostgreSQL applicatif et utilisateur transmis à la base
+            'contexte',
             // 'honeypot',
             'csrf' => ['except' => ['api/*']],
             // 'invalidchars',
         ],
         'after' => [
+            'contexte',
             // 'honeypot',
             // 'secureheaders',
         ],

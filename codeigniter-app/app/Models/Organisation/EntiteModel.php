@@ -3,7 +3,7 @@
 namespace App\Models\Organisation;
 
 use CodeIgniter\DataCaster\Cast\BooleanCast;
-use CodeIgniter\Model;
+use App\Models\BaseModel;
 use InvalidArgumentException;
 
 /**
@@ -13,7 +13,7 @@ use InvalidArgumentException;
  * par la base (voir la migration CreerOrganisation) : elles ne figurent pas dans
  * $allowedFields et ne peuvent pas être saisies.
  */
-class EntiteModel extends Model
+class EntiteModel extends BaseModel
 {
     public const AXES = ['hierarchique', 'logistique'];
 
@@ -100,10 +100,14 @@ class EntiteModel extends Model
             ->orderBy('e.nom')
             ->get()->getResultArray();
 
-        $enfants = [];
+        // Avec le cloisonnement, le parent d'une entité visible peut être hors périmètre :
+        // l'entité est alors affichée comme une racine.
+        $visibles = array_flip(array_column($lignes, 'id'));
+        $enfants  = [];
         foreach ($lignes as $ligne) {
             $ligne['actif'] = BooleanCast::get($ligne['actif']);
-            $enfants[$ligne[$parent] ?? 0][] = $ligne;
+            $idParent       = $ligne[$parent];
+            $enfants[$idParent !== null && isset($visibles[$idParent]) ? $idParent : 0][] = $ligne;
         }
 
         $resultat = [];

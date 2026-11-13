@@ -19,6 +19,18 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+    /**
+     * Droits de l'utilisateur connecté (RBAC + ABAC), voir App\Libraries\Droits.
+     */
+    public static function droits(bool $getShared = true): \App\Libraries\Droits
+    {
+        if ($getShared) {
+            return static::getSharedInstance('droits');
+        }
+
+        return new \App\Libraries\Droits(db_connect());
+    }
+
     /*
      * public static function example($getShared = true)
      * {

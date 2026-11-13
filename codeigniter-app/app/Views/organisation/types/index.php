@@ -4,7 +4,7 @@
 <?= view('organisation/_onglets', ['onglet' => 'types']) ?>
 
 <h2>Types d'entités</h2>
-<?php $peutGerer = auth()->user()->can('organisation.gerer') ?>
+<?php $peutGerer = service('droits')->peut('organisation.gerer', null, true) ?>
 <?php if ($peutGerer): ?>
     <p><a class="bouton" href="<?= site_url('organisation/types/new') ?>">Nouveau type</a></p>
 <?php endif ?>

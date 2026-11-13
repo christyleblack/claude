@@ -210,7 +210,8 @@ class Auth extends ShieldAuth
      */
     public array $sessionConfig = [
         'field'              => 'user',
-        'allowRemembering'   => true,
+        // Désactivé : « se souvenir de moi » contournerait l'expiration des sessions inactives (section 4.3)
+        'allowRemembering'   => false,
         'rememberCookieName' => 'remember',
         'rememberLength'     => 30 * DAY,
     ];

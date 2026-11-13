@@ -133,6 +133,7 @@ classDiagram
 - **Délégation** : transfert temporaire d'une affectation à un autre utilisateur, daté et tracé (règle 4.2-5).
 - **Cloisonnement en base** (règle 4.2-6) : les tables métier sont protégées par la sécurité au niveau des lignes de PostgreSQL (*Row Level Security*). À chaque requête, l'application transmet l'utilisateur connecté à la base, et les politiques de sécurité ne laissent passer que les lignes de son périmètre. Un oubli dans le code PHP ne suffit donc pas à exposer des données.
 - **Journal d'audit** (ADM-03, section 5 « Traçabilité ») : en insertion seule, comme le journal des mouvements.
+- **Mise en œuvre** (module Utilisateurs et droits) : la portée d'un rôle est *nationale* ou *entité* ; une affectation ou une délégation peut être **révoquée** avant terme (date et auteur conservés). Le périmètre suit l'arbre **hiérarchique**. → **H-08**. La restriction d'une affectation à une filière (H-02) sera ajoutée avec le référentiel, qui crée la table des filières.
 - **Séparation des tâches** (règle 4.2-4, RG-32) : vérifiée par l'application et doublée d'une contrainte en base là où c'est possible (par exemple : le valideur d'un inventaire est différent du compteur).
 
 ## 4. Référentiel du matériel (REF-01 à REF-05, RG-05 à RG-09)
@@ -315,6 +316,7 @@ Ces choix ont été faits pour pouvoir avancer ; chacun peut être modifié avan
 | H-05 | Chaînage des mouvements par empreinte SHA-256 pour rendre toute altération détectable | Ce niveau de preuve suffit-il, ou faut-il un horodatage ou une signature par un tiers ? | Objectif 1.2-3 |
 | H-06 | Le détenteur est l'entité qui possède l'emplacement où se trouve le matériel | Un matériel peut-il être détenu par une entité sans être stocké chez elle (prêt, mission) ? | STK-04 |
 | H-07 | Signature électronique simple : validation par l'utilisateur authentifié, horodatée et journalisée | Faut-il une signature manuscrite numérisée ou un certificat ? | INV-03, ARM-03 |
+| H-08 | Le périmètre d'une affectation de portée « entité » couvre l'entité et ses subordonnées dans l'arbre **hiérarchique** | Un service logistique doit-il aussi voir les entités qu'il ravitaille (arbre logistique) ? Ce besoin apparaîtra surtout avec les demandes (lot 2) | Règle 4.2-3 |
 
 ## 8. Règles de gestion et points ouverts qui conditionnent le lot 1
 

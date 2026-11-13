@@ -28,11 +28,19 @@ class Forces extends OrganisationController
 
     public function new()
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/forces')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         return $this->formulaire('Nouvelle force', [], site_url('organisation/forces'));
     }
 
     public function create()
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/forces')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         $resultat = $this->enregistrer($this->forces, fn () => $this->forces->insert($this->donnees()));
 
         if ($resultat instanceof RedirectResponse) {
@@ -44,6 +52,10 @@ class Forces extends OrganisationController
 
     public function edit(int $id)
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/forces')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         $force = $this->trouver($this->forces, $id);
 
         return $this->formulaire('Modifier : ' . $force['nom'], $force, site_url('organisation/forces/' . $id));
@@ -51,6 +63,10 @@ class Forces extends OrganisationController
 
     public function update(int $id)
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/forces')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         $this->trouver($this->forces, $id);
 
         $resultat = $this->enregistrer($this->forces, fn () => $this->forces->update($id, $this->donnees() + ['id' => $id]));

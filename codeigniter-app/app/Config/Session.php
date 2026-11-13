@@ -41,7 +41,8 @@ class Session extends BaseConfig
      * The number of SECONDS you want the session to last.
      * Setting to 0 (zero) means expire when the browser is closed.
      */
-    public int $expiration = 7200;
+    // Expiration après 30 minutes d'inactivité (cahier des charges, section 4.3) ; surcharge : session.expiration dans .env
+    public int $expiration = 1800;
 
     /**
      * --------------------------------------------------------------------------

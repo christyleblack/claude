@@ -27,11 +27,19 @@ class TypesEntite extends OrganisationController
 
     public function new()
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/types')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         return $this->formulaire('Nouveau type d\'entité', [], site_url('organisation/types'));
     }
 
     public function create()
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/types')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         $resultat = $this->enregistrer($this->types, fn () => $this->types->insert($this->donnees()));
 
         if ($resultat instanceof RedirectResponse) {
@@ -43,6 +51,10 @@ class TypesEntite extends OrganisationController
 
     public function edit(int $id)
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/types')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         $type = $this->trouver($this->types, $id);
 
         return $this->formulaire('Modifier : ' . $type['libelle'], $type, site_url('organisation/types/' . $id));
@@ -50,6 +62,10 @@ class TypesEntite extends OrganisationController
 
     public function update(int $id)
     {
+        if (! $this->peutGerer(null, true)) {
+            return redirect()->to('organisation/types')->with('erreur', 'Ce référentiel se gère au niveau national.');
+        }
+
         $this->trouver($this->types, $id);
 
         $resultat = $this->enregistrer($this->types, fn () => $this->types->update($id, $this->donnees() + ['id' => $id]));

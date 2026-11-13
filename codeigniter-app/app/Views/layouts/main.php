@@ -20,7 +20,7 @@
         .erreurs { background: #fdecea; border: 1px solid #f5c2bd; padding: 10px; border-radius: 4px; }
         ul.erreurs { padding-left: 30px; }
         label { display: block; margin: 16px 0 4px; font-weight: 600; }
-        input[type=text], input[type=email], input[type=password], input[type=number], select, textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
+        input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], select, textarea { width: 100%; box-sizing: border-box; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 4px; }
         textarea { min-height: 180px; }
         .compte { display: flex; gap: 12px; align-items: center; }
         .compte a:not(.bouton) { color: #dd4814; }
@@ -56,10 +56,18 @@
     </header>
 
     <?php if (auth()->loggedIn()): ?>
-        <?php $segment = service('request')->getUri()->getSegment(1) ?>
+        <?php
+        $segments = service('request')->getUri()->getSegments();
+        $segment  = $segments[0] ?? '';
+        $page     = $segment . '/' . ($segments[1] ?? '');
+        ?>
         <nav class="principale">
             <a href="<?= site_url('organisation/entites') ?>" class="<?= $segment === 'organisation' ? 'actif' : '' ?>">Organisation</a>
             <a href="<?= site_url('articles') ?>" class="<?= $segment === 'articles' ? 'actif' : '' ?>">Articles (exemple)</a>
+            <a href="<?= site_url('administration/mes-droits') ?>" class="<?= in_array($page, ['administration/mes-droits', 'administration/delegations'], true) ? 'actif' : '' ?>">Mes droits</a>
+            <?php if (service('droits')->peut('administration.utilisateurs')): ?><a href="<?= site_url('administration/utilisateurs') ?>" class="<?= $page === 'administration/utilisateurs' ? 'actif' : '' ?>">Utilisateurs</a><?php endif ?>
+            <?php if (service('droits')->peut('administration.roles')): ?><a href="<?= site_url('administration/roles') ?>" class="<?= $page === 'administration/roles' ? 'actif' : '' ?>">Rôles</a><?php endif ?>
+            <?php if (service('droits')->peut('audit.consulter')): ?><a href="<?= site_url('administration/journal') ?>" class="<?= $page === 'administration/journal' ? 'actif' : '' ?>">Journal d'audit</a><?php endif ?>
         </nav>
     <?php endif ?>
 

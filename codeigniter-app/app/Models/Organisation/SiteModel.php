@@ -2,9 +2,9 @@
 
 namespace App\Models\Organisation;
 
-use CodeIgniter\Model;
+use App\Models\BaseModel;
 
-class SiteModel extends Model
+class SiteModel extends BaseModel
 {
     protected $table         = 'site';
     protected $useTimestamps = true;
