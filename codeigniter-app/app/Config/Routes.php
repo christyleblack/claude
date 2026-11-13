@@ -28,7 +28,7 @@ $routes->group('api', static function ($routes) {
 });
 
 // Module Organisation (lot 1) : consultation pour tout utilisateur connecté,
-// modification réservée à la permission organisation.gerer
+// modification réservée à la permission organisation.gerer (vérifiée aussi sur l'entité concernée)
 $routes->group('organisation', ['filter' => 'session', 'namespace' => 'App\Controllers\Organisation'], static function ($routes) {
     $routes->get('/', static fn () => redirect()->to('organisation/entites'));
     $routes->get('entites', 'Entites::index');
@@ -37,7 +37,7 @@ $routes->group('organisation', ['filter' => 'session', 'namespace' => 'App\Contr
     $routes->get('types', 'TypesEntite::index');
     $routes->get('sites/(:num)', 'Sites::show/$1');
 
-    $routes->group('', ['filter' => 'permission:organisation.gerer'], static function ($routes) {
+    $routes->group('', ['filter' => 'droit:organisation.gerer'], static function ($routes) {
         foreach (['entites' => 'Entites', 'forces' => 'Forces', 'types' => 'TypesEntite', 'sites' => 'Sites', 'emplacements' => 'Emplacements'] as $chemin => $controleur) {
             $routes->get("{$chemin}/new", "{$controleur}::new");
             $routes->post($chemin, "{$controleur}::create");
@@ -45,5 +45,30 @@ $routes->group('organisation', ['filter' => 'session', 'namespace' => 'App\Contr
             $routes->post("{$chemin}/(:num)", "{$controleur}::update/$1");
         }
     });
+});
+
+// Administration (section 4) : chaque partie exige sa permission ; « Mes droits » est ouvert à tout utilisateur connecté
+$routes->group('administration', ['filter' => 'session', 'namespace' => 'App\Controllers\Administration'], static function ($routes) {
+    $routes->get('mes-droits', 'Delegations::index');
+    $routes->get('delegations/new', 'Delegations::new');
+    $routes->post('delegations', 'Delegations::create');
+    $routes->post('delegations/(:num)/revoquer', 'Delegations::revoquer/$1');
+
+    $routes->group('', ['filter' => 'droit:administration.utilisateurs'], static function ($routes) {
+        $routes->get('utilisateurs', 'Utilisateurs::index');
+        $routes->get('utilisateurs/(:num)', 'Utilisateurs::show/$1');
+        $routes->post('utilisateurs/(:num)/affectations', 'Utilisateurs::affecter/$1');
+        $routes->post('affectations/(:num)/revoquer', 'Utilisateurs::revoquer/$1');
+    });
+
+    $routes->group('', ['filter' => 'droit:administration.roles'], static function ($routes) {
+        $routes->get('roles', 'Roles::index');
+        $routes->get('roles/new', 'Roles::new');
+        $routes->post('roles', 'Roles::create');
+        $routes->get('roles/(:num)/edit', 'Roles::edit/$1');
+        $routes->post('roles/(:num)', 'Roles::update/$1');
+    });
+
+    $routes->get('journal', 'Journal::index', ['filter' => 'droit:audit.consulter']);
 });
 

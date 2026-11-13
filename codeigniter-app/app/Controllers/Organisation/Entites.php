@@ -35,7 +35,9 @@ class Entites extends OrganisationController
     public function show(int $id)
     {
         $entite = $this->trouver($this->entites, $id);
-        $parent = fn (?int $idParent) => $idParent === null ? null : $this->entites->find($idParent);
+        // Un parent hors du périmètre de l'utilisateur n'est pas lisible : il est signalé comme tel
+        $parent = fn (?int $idParent) => $idParent === null ? null
+            : ($this->entites->find($idParent) ?? ['id' => null, 'nom' => 'hors de votre périmètre']);
 
         return view('organisation/entites/show', [
             'titrePage'   => $entite['nom'],
@@ -64,6 +66,10 @@ class Entites extends OrganisationController
 
     public function create()
     {
+        if (! $this->peutPlacer($this->champ('parent_hierarchique_id'))) {
+            return $this->refuser();
+        }
+
         $resultat = $this->enregistrer($this->entites, fn () => $this->entites->insert($this->donnees()));
 
         if ($resultat instanceof RedirectResponse) {
@@ -77,6 +83,10 @@ class Entites extends OrganisationController
     {
         $entite = $this->trouver($this->entites, $id);
 
+        if (! $this->peutGerer($id)) {
+            return redirect()->to('organisation/entites/' . $id)->with('erreur', 'Vous n\'avez pas le droit de modifier cette entité.');
+        }
+
         return $this->formulaire('Modifier : ' . $entite['nom'], $entite, site_url('organisation/entites/' . $id));
     }
 
@@ -84,6 +94,10 @@ class Entites extends OrganisationController
     {
         $this->trouver($this->entites, $id);
         $donnees = $this->donnees() + ['id' => $id];
+
+        if (! $this->peutGerer($id) || ! $this->peutPlacer($donnees['parent_hierarchique_id'])) {
+            return $this->refuser();
+        }
 
         // Message clair avant que la base ne refuse le cycle
         foreach (EntiteModel::AXES as $axe) {
@@ -104,6 +118,17 @@ class Entites extends OrganisationController
         }
 
         return redirect()->to('organisation/entites/' . $id)->with('message', 'Entité modifiée.');
+    }
+
+    /**
+     * Placer une entité sous un parent hiérarchique demande le droit sur ce parent ;
+     * en faire une racine demande le droit au niveau national.
+     */
+    private function peutPlacer(string $parentHierarchique): bool
+    {
+        return $parentHierarchique === ''
+            ? $this->peutGerer(null, true)
+            : $this->peutGerer((int) $parentHierarchique);
     }
 
     private function donnees(): array

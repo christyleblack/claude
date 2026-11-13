@@ -1,13 +1,13 @@
 <?php
 
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 use Config\App;
 use Tests\Support\Libraries\ConfigReader;
 
 /**
  * @internal
  */
-final class HealthTest extends CIUnitTestCase
+final class HealthTest extends TestCase
 {
     public function testIsDefinedAppPath(): void
     {

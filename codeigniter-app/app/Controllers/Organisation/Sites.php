@@ -41,6 +41,10 @@ class Sites extends OrganisationController
 
     public function create()
     {
+        if (! $this->peutGerer((int) $this->champ('entite_id'))) {
+            return $this->refuser();
+        }
+
         $resultat = $this->enregistrer($this->sites, fn () => $this->sites->insert($this->donnees()));
 
         if ($resultat instanceof RedirectResponse) {
@@ -54,12 +58,20 @@ class Sites extends OrganisationController
     {
         $site = $this->trouver($this->sites, $id);
 
+        if (! $this->peutGerer($site['entite_id'])) {
+            return redirect()->to('organisation/sites/' . $id)->with('erreur', 'Vous n\'avez pas le droit de modifier ce site.');
+        }
+
         return $this->formulaire('Modifier : ' . $site['nom'], $site, site_url('organisation/sites/' . $id));
     }
 
     public function update(int $id)
     {
-        $this->trouver($this->sites, $id);
+        $site = $this->trouver($this->sites, $id);
+
+        if (! $this->peutGerer($site['entite_id']) || ! $this->peutGerer((int) $this->champ('entite_id'))) {
+            return $this->refuser();
+        }
 
         $resultat = $this->enregistrer($this->sites, fn () => $this->sites->update($id, $this->donnees() + ['id' => $id]));
 

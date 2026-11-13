@@ -2,14 +2,14 @@
 
 namespace App\Models\Organisation;
 
-use CodeIgniter\Model;
+use App\Models\BaseModel;
 
 /**
  * Forces et paramètres d'autonomie de leur direction du matériel (section 2.5).
  * Une force est rattachée à son entité racine dans l'arbre hiérarchique ;
  * toutes les entités subordonnées lui appartiennent automatiquement (RG-02).
  */
-class ForceModel extends Model
+class ForceModel extends BaseModel
 {
     protected $table         = 'force';
     protected $useTimestamps = true;
@@ -63,6 +63,6 @@ class ForceModel extends Model
     public function avecRacine(): static
     {
         return $this->select('force.*, e.code AS racine_code, e.nom AS racine_nom')
-            ->join('entite e', 'e.id = force.entite_racine_id');
+            ->join('entite e', 'e.id = force.entite_racine_id', 'left');
     }
 }

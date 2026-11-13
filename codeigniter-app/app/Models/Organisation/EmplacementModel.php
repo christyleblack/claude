@@ -2,14 +2,14 @@
 
 namespace App\Models\Organisation;
 
-use CodeIgniter\Model;
+use App\Models\BaseModel;
 
 /**
  * Emplacements de stockage d'un site, éventuellement imbriqués.
  * La base garantit qu'un emplacement n'est contenu que dans un emplacement
  * du même site, et refuse les cycles.
  */
-class EmplacementModel extends Model
+class EmplacementModel extends BaseModel
 {
     protected $table         = 'emplacement';
     protected $useTimestamps = true;

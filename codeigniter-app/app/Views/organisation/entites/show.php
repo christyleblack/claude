@@ -5,9 +5,12 @@ $fil = static fn (array $ancetres) => implode(' › ', array_map(
     static fn ($a) => '<a href="' . site_url('organisation/entites/' . $a['id']) . '">' . esc($a['nom']) . '</a>',
     $ancetres,
 ));
-$lien = static fn (?array $e) => $e === null ? '<em>aucun (racine)</em>'
-    : '<a href="' . site_url('organisation/entites/' . $e['id']) . '">' . esc($e['nom']) . '</a>';
-$peutGerer = auth()->user()->can('organisation.gerer');
+$lien = static fn (?array $e) => match (true) {
+    $e === null       => '<em>aucun (racine)</em>',
+    $e['id'] === null => '<em>' . esc($e['nom']) . '</em>',
+    default           => '<a href="' . site_url('organisation/entites/' . $e['id']) . '">' . esc($e['nom']) . '</a>',
+};
+$peutGerer = service('droits')->peut('organisation.gerer', $entite['id']);
 ?>
 
 <?= $this->section('contenu') ?>

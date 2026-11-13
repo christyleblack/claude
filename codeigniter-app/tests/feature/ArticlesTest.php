@@ -6,7 +6,7 @@ use App\Models\ArticleModel;
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Shield\Test\AuthenticationTesting;
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 
@@ -16,7 +16,7 @@ use CodeIgniter\Test\FeatureTestTrait;
  *
  * @internal
  */
-final class ArticlesTest extends CIUnitTestCase
+final class ArticlesTest extends TestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;

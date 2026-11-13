@@ -8,7 +8,7 @@ use App\Models\Organisation\ForceModel;
 use App\Models\Organisation\SiteModel;
 use App\Models\Organisation\TypeEntiteModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 
 /**
@@ -18,7 +18,7 @@ use CodeIgniter\Test\DatabaseTestTrait;
  *
  * @internal
  */
-final class ArbresTest extends CIUnitTestCase
+final class ArbresTest extends TestCase
 {
     use DatabaseTestTrait;
 

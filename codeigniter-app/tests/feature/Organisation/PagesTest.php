@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Organisation;
 
+use App\Models\Droits\AffectationModel;
+use App\Models\Droits\RoleModel;
 use App\Models\Organisation\EmplacementModel;
 use App\Models\Organisation\EntiteModel;
 use App\Models\Organisation\SiteModel;
@@ -10,17 +12,17 @@ use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Shield\Test\AuthenticationTesting;
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 
 /**
- * Pages du module Organisation : consultation par tout utilisateur connecté,
- * modification réservée à la permission organisation.gerer (groupes admin et superadmin).
+ * Pages du module Organisation : consultation dans le périmètre de l'utilisateur,
+ * modification réservée à la permission organisation.gerer, portée par un rôle affecté.
  *
  * @internal
  */
-final class PagesTest extends CIUnitTestCase
+final class PagesTest extends TestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
@@ -41,13 +43,21 @@ final class PagesTest extends CIUnitTestCase
 
         parent::setUp();
 
-        $this->admin = fake(UserModel::class, ['username' => 'admin', 'active' => 1]);
-        $this->admin->addGroup('admin');
-        $this->lecteur = fake(UserModel::class, ['username' => 'lecteur', 'active' => 1]);
-        $this->lecteur->addGroup('user');
-
         $this->type    = (new TypeEntiteModel())->insert(['code' => 'UNITE', 'libelle' => 'Unité']);
         $this->entites = new EntiteModel();
+        $national      = $this->creer('NATIONAL');
+
+        // Rôles nationaux : l'un gère l'organisation, l'autre la consulte seulement
+        $roles = new RoleModel();
+        $gerer = (int) $roles->insert(['code' => 'GERER', 'libelle' => 'Gestion', 'portee' => 'nationale']);
+        $roles->definirPermissions($gerer, ['organisation.gerer']);
+        $lire = (int) $roles->insert(['code' => 'LIRE', 'libelle' => 'Lecture', 'portee' => 'nationale']);
+
+        $this->admin   = fake(UserModel::class, ['username' => 'admin', 'active' => 1]);
+        $this->lecteur = fake(UserModel::class, ['username' => 'lecteur', 'active' => 1]);
+        $affectations  = new AffectationModel();
+        $affectations->insert(['utilisateur_id' => $this->admin->id, 'role_id' => $gerer, 'entite_id' => $national, 'date_debut' => date('Y-m-d')]);
+        $affectations->insert(['utilisateur_id' => $this->lecteur->id, 'role_id' => $lire, 'entite_id' => $national, 'date_debut' => date('Y-m-d')]);
     }
 
     private function jeton(): array
@@ -90,12 +100,12 @@ final class PagesTest extends CIUnitTestCase
     {
         $result = $this->actingAs($this->lecteur)->get('organisation/entites/new');
         $result->assertRedirect();
-        $result->assertSessionHas('error', lang('Auth.notEnoughPrivilege'));
+        $result->assertSessionHas('erreur');
 
         $result = $this->actingAs($this->lecteur)->post('organisation/entites', $this->formulaireEntite(['code' => 'PIRATE', 'nom' => 'Pirate']));
 
         $result->assertRedirect();
-        $result->assertSessionHas('error', lang('Auth.notEnoughPrivilege'));
+        $result->assertSessionHas('erreur');
         $this->dontSeeInDatabase('entite', ['code' => 'PIRATE']);
     }
 

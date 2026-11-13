@@ -1,11 +1,11 @@
 <?php
 
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 
 /**
  * @internal
  */
-final class ExampleSessionTest extends CIUnitTestCase
+final class ExampleSessionTest extends TestCase
 {
     public function testSessionSimple(): void
     {

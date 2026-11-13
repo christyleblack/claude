@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use CodeIgniter\Shield\Models\UserModel;
-use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\TestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 
@@ -12,7 +12,7 @@ use CodeIgniter\Test\FeatureTestTrait;
  *
  * @internal
  */
-final class AuthPagesTest extends CIUnitTestCase
+final class AuthPagesTest extends TestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
@@ -42,7 +42,8 @@ final class AuthPagesTest extends CIUnitTestCase
         $result->assertSee('Gestion du matériel');
         $result->assertSee('name="email"');
         $result->assertSee('name="password"');
-        $result->assertSee('name="remember"');
+        // « Se souvenir de moi » désactivé : contournerait l'expiration des sessions inactives
+        $result->assertDontSee('name="remember"');
         $result->assertDontSee('bootstrap');
         $result->assertDontSee('magic-link');
     }

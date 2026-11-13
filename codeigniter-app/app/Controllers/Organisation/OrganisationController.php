@@ -2,70 +2,24 @@
 
 namespace App\Controllers\Organisation;
 
-use App\Controllers\BaseController;
-use CodeIgniter\Database\Exceptions\DatabaseException;
-use CodeIgniter\Exceptions\PageNotFoundException;
+use App\Controllers\GestionController;
 use CodeIgniter\HTTP\RedirectResponse;
-use CodeIgniter\Model;
 
 /**
  * Outils communs aux contrôleurs du module Organisation.
  */
-abstract class OrganisationController extends BaseController
+abstract class OrganisationController extends GestionController
 {
     /**
-     * Ligne trouvée, ou page 404.
+     * Droit de gérer l'organisation : sur une entité, ou au niveau national.
      */
-    protected function trouver(Model $model, int $id): array
+    protected function peutGerer(?int $entiteId = null, bool $nationale = false): bool
     {
-        $ligne = $model->find($id);
-
-        if ($ligne === null) {
-            throw PageNotFoundException::forPageNotFound('Élément introuvable.');
-        }
-
-        return $ligne;
+        return service('droits')->peut('organisation.gerer', $entiteId, $nationale);
     }
 
-    /**
-     * Case à cocher d'un formulaire : absente si décochée.
-     */
-    protected function case(string $nom): bool
+    protected function refuser(): RedirectResponse
     {
-        return $this->request->getPost($nom) !== null;
-    }
-
-    /**
-     * Champ texte nettoyé ; un champ vide vaut chaîne vide.
-     */
-    protected function champ(string $nom): string
-    {
-        return trim((string) $this->request->getPost($nom));
-    }
-
-    /**
-     * Enregistre via le modèle ; en cas d'erreur de validation ou de refus
-     * par la base (cycle…), renvoie au formulaire avec les messages.
-     *
-     * @param callable(): (bool|int|string) $operation
-     */
-    protected function enregistrer(Model $model, callable $operation): RedirectResponse|int|string|true
-    {
-        try {
-            $resultat = $operation();
-        } catch (DatabaseException $e) {
-            // Contraintes garanties par la base (voir la migration CreerOrganisation)
-            $message = str_contains($e->getMessage(), 'Cycle refusé')
-                ? preg_replace('/^.*?(Cycle refusé[^\n]*?)(\s+CONTEXT:.*)?$/s', '$1', $e->getMessage())
-                : 'Enregistrement refusé par la base de données : vérifiez les valeurs saisies.';
-
-            return redirect()->back()->withInput()->with('erreurs', [$message]);
-        }
-
-        if ($resultat === false) {
-            return redirect()->back()->withInput()->with('erreurs', $model->errors());
-        }
-
-        return $resultat;
+        return redirect()->back()->withInput()->with('erreurs', ['Vous n\'avez pas le droit de gérer cet élément de l\'organisation (hors de votre périmètre).']);
     }
 }

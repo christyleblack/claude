@@ -2,9 +2,9 @@
 
 namespace App\Models\Organisation;
 
-use CodeIgniter\Model;
+use App\Models\BaseModel;
 
-class TypeEntiteModel extends Model
+class TypeEntiteModel extends BaseModel
 {
     protected $table         = 'type_entite';
     protected $allowedFields = ['code', 'libelle', 'est_stockeur'];
