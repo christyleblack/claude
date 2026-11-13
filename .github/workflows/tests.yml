@@ -12,13 +12,35 @@ jobs:
       run:
         working-directory: codeigniter-app
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: gestion_materiel_tests
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_user"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      database_tests_hostname: localhost
+      database_tests_database: gestion_materiel_tests
+      database_tests_username: ci_user
+      database_tests_password: ci_password
+      database_tests_port: 5432
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: intl, mbstring, sqlite3
+          extensions: intl, mbstring, pgsql
           coverage: none
 
       - name: Installer les dépendances

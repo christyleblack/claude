@@ -65,17 +65,24 @@ PHP version 8.2 or higher is required, with the following extensions installed:
 Additionally, make sure that the following extensions are enabled in your PHP:
 
 - json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
+- [pgsql](https://www.php.net/manual/en/pgsql.installation.php) for PostgreSQL (used by this application)
 - [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
 
-## Base de données MySQL
+## Base de données PostgreSQL
 
-1. Créer la base et l'utilisateur :
+L'application utilise PostgreSQL (cahier des charges, section 6) : l'extension `ltree` sert aux arbres de l'organisation et la sécurité au niveau des lignes (*Row Level Security*) au cloisonnement des données. L'extension `ltree` est activée par une migration ; aucun droit de superutilisateur n'est nécessaire.
+
+1. Créer l'utilisateur et les deux bases (développement et tests), en remplaçant `ci_password` par un mot de passe de votre choix :
+
+```bash
+sudo -u postgres psql
+```
 
 ```sql
-CREATE DATABASE ci_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'ci_user'@'localhost' IDENTIFIED BY 'ci_password';
-GRANT ALL ON ci_app.* TO 'ci_user'@'localhost';
+CREATE ROLE ci_user LOGIN PASSWORD 'ci_password';
+CREATE DATABASE gestion_materiel OWNER ci_user ENCODING 'UTF8' TEMPLATE template0;
+CREATE DATABASE gestion_materiel_tests OWNER ci_user ENCODING 'UTF8' TEMPLATE template0;
+\q
 ```
 
 2. Copier `env` en `.env` et renseigner (le fichier `.env` n'est pas versionné) :
@@ -83,12 +90,19 @@ GRANT ALL ON ci_app.* TO 'ci_user'@'localhost';
 ```
 CI_ENVIRONMENT = development
 database.default.hostname = localhost
-database.default.database = ci_app
+database.default.database = gestion_materiel
 database.default.username = ci_user
 database.default.password = ci_password
-database.default.DBDriver = MySQLi
-database.default.port = 3306
+database.default.port = 5432
+
+database.tests.hostname = localhost
+database.tests.database = gestion_materiel_tests
+database.tests.username = ci_user
+database.tests.password = ci_password
+database.tests.port = 5432
 ```
+
+La base `gestion_materiel_tests` est vidée à chaque exécution des tests : ne jamais la faire pointer vers la base de développement.
 
 3. Lancer les migrations puis le serveur :
 
@@ -96,6 +110,8 @@ database.default.port = 3306
 php spark migrate --all
 php spark serve
 ```
+
+**Données** : n'utiliser que des données fictives en développement et dans les tests, jamais de données réelles (cahier des charges, section 7.4).
 
 Exemple fourni : table `articles` (`app/Database/Migrations`), `ArticleModel` (avec règles de validation), contrôleurs `Articles` (pages HTML) et `Api\Articles` (JSON).
 
@@ -151,7 +167,7 @@ Le projet exige PHP 8.2 ou plus récent (Ubuntu 24.04 fournit PHP 8.3). Sur Ubun
 
 ```bash
 sudo apt update
-sudo apt install git composer mysql-server php-cli php-mysql php-sqlite3 php-intl php-mbstring php-xml php-curl unzip
+sudo apt install git composer postgresql php-cli php-pgsql php-intl php-mbstring php-xml php-curl unzip
 php -v
 ```
 
@@ -164,7 +180,7 @@ composer install
 cp env .env
 ```
 
-3. Créer la base (voir la section « Base de données MySQL » ci-dessus) avec `sudo mysql`, puis renseigner `.env`.
+3. Créer l'utilisateur et les bases PostgreSQL, puis renseigner `.env` (voir la section « Base de données PostgreSQL » ci-dessus).
 
 4. Lancer les migrations et le serveur de développement :
 
@@ -173,7 +189,7 @@ php spark migrate --all
 php spark serve
 ```
 
-L'application est accessible sur http://localhost:8080 et `http://localhost:8080/articles` renvoie la liste des articles au format JSON.
+L'application est accessible sur http://localhost:8080.
 
 Mettre à jour le code : `git pull`. Envoyer ses modifications : `git push`.
 
@@ -183,7 +199,7 @@ Mettre à jour le code : `git pull`. Envoyer ses modifications : `git push`.
 composer test
 ```
 
-Les tests utilisent une base SQLite en mémoire, recréée pour chaque test (configuration `tests` dans `app/Config/Database.php`). Ils ne nécessitent pas MySQL et ne touchent jamais à la base de développement. L'extension PHP `sqlite3` est requise (`sudo apt install php-sqlite3`).
+Les tests utilisent la base PostgreSQL `gestion_materiel_tests` (groupe `tests` dans `app/Config/Database.php`, identifiants dans `.env`), recréée pour chaque test. Ils ne touchent jamais à la base de développement. Sur GitHub Actions, un serveur PostgreSQL 16 est démarré pour l'occasion.
 
 - `tests/feature/ArticlesTest.php` : pages HTML (lecture publique, connexion obligatoire pour écrire, protection CSRF, validation, droits de l'auteur et des administrateurs).
 - `tests/feature/AuthPagesTest.php` : pages de connexion et d'inscription (mise en page, inscription, mauvais mot de passe).
