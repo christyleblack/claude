@@ -13,7 +13,7 @@
             <input type="text" id="objet" name="objet" value="<?= esc($filtres['objet']) ?>">
         </div>
         <div>
-            <label for="action">Action (INSERT, UPDATE, CONNEXION…)</label>
+            <label for="action">Action (INSERT, UPDATE, CONNEXION, CONSULTATION…)</label>
             <input type="text" id="action" name="action" value="<?= esc($filtres['action']) ?>">
             <div class="grille" style="grid-template-columns: 1fr 1fr">
                 <div><label for="du">Du</label><input type="date" id="du" name="du" value="<?= esc($filtres['du']) ?>"></div>

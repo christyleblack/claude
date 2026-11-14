@@ -11,9 +11,9 @@ class RoleModel extends BaseModel
 {
     protected $table         = 'role';
     protected $useTimestamps = true;
-    protected $allowedFields = ['code', 'libelle', 'portee', 'actif'];
+    protected $allowedFields = ['code', 'libelle', 'portee', 'actif', 'double_facteur'];
 
-    protected array $casts = ['id' => 'int', 'actif' => 'boolean'];
+    protected array $casts = ['id' => 'int', 'actif' => 'boolean', 'double_facteur' => 'boolean'];
 
     protected $validationRules = [
         'id'      => 'permit_empty|is_natural_no_zero',

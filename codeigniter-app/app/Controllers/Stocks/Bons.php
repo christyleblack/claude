@@ -4,6 +4,7 @@ namespace App\Controllers\Stocks;
 
 use App\Controllers\BaseController;
 use App\Libraries\BonPdf;
+use App\Libraries\JournalConsultations;
 use App\Models\Stocks\BonModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
@@ -43,6 +44,8 @@ class Bons extends BaseController
         if ($bon === null) {
             throw PageNotFoundException::forPageNotFound('Bon introuvable.');
         }
+
+        JournalConsultations::siSensible('bon', $id, 'pdf');
 
         return $this->response
             ->setContentType('application/pdf')

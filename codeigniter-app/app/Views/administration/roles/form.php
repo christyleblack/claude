@@ -19,6 +19,7 @@
             <?= view('organisation/_select', ['nom' => 'portee', 'libelle' => 'Portée', 'options' => ['entite' => 'Entité d\'affectation et ses subordonnées', 'nationale' => 'Nationale (toute l\'organisation)'], 'valeur' => $role['portee'] ?? 'entite']) ?>
 
             <?= view('organisation/_case', ['nom' => 'actif', 'libelle' => 'Rôle actif', 'valeur' => $role['actif'] ?? true]) ?>
+            <?= view('organisation/_case', ['nom' => 'double_facteur', 'libelle' => 'Rôle sensible : connexion confirmée par un code envoyé par courriel', 'valeur' => $role['double_facteur'] ?? false]) ?>
         </div>
         <div>
             <h3>Permissions</h3>
