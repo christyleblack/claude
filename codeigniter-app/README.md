@@ -194,6 +194,8 @@ Exigences STK-01 à STK-05, règles RG-10 à RG-14. Modèle de données : `docs/
 | `/stocks/mouvements/new` | saisie : entrée, sortie, transfert, perception, réintégration, perte, réforme (STK-02) |
 | `/stocks/mouvements/{id}` | détail, empreinte, annulation par mouvement inverse |
 | `/stocks/materiels/{id}` | matériel sérialisé : emplacement actuel, historique, état (STK-05) |
+| `/stocks/bons` | bons émis : bon de perception, bon de sortie, bordereau de transfert (STK-06) |
+| `/stocks/bons/{id}.pdf` | PDF d'un bon |
 
 **Garanties apportées par la base** (migration `CreerStocks`) :
 
@@ -205,7 +207,9 @@ Exigences STK-01 à STK-05, règles RG-10 à RG-14. Modèle de données : `docs/
 - **Infalsifiabilité** (H-05) : chaque mouvement porte une empreinte SHA-256 chaînée au précédent. `php spark stocks:verifier` signale le premier mouvement altéré, même par un administrateur de la base ; à planifier régulièrement.
 - **Droits** : on ne voit que les mouvements, le stock et les matériels de son périmètre. Saisir ou annuler exige `stocks.mouvementer` sur l'entité responsable : le destinataire pour une entrée ou une réintégration, l'expéditeur sinon.
 
-Une saisie de plusieurs numéros de série forme une seule transaction : si un numéro est refusé, rien n'est enregistré. La régularisation est réservée aux inventaires (module suivant) ; les bons PDF (STK-06) suivront.
+Une saisie de plusieurs numéros de série forme une seule transaction : si un numéro est refusé, rien n'est enregistré. La régularisation est réservée aux inventaires (module suivant).
+
+**Bons** (STK-06, migration `CreerBons`) : chaque saisie de perception, de sortie (ou perte, réforme) et de transfert (ou réintégration) émet automatiquement, dans la même transaction, un bon de perception, un bon de sortie ou un bordereau de transfert. Une saisie de plusieurs numéros de série donne un seul bon de plusieurs lignes. La numérotation est continue et sans trou, par type et par année (`BP-`, `BS-`, `BT-2026-000001`) ; une saisie refusée ne consomme pas de numéro. Un bon émis ne se modifie pas ; son PDF (Dompdf, licence LGPL 2.1) est produit à la demande, signale les mouvements annulés et reprend l'empreinte de chaque mouvement. Un bon n'est visible que si ses mouvements le sont.
 
 ```bash
 php spark db:seed StocksSeeder   # mouvements fictifs dans le dépôt de l'Armée de Terre (exige un compte utilisateur)
@@ -307,6 +311,8 @@ php spark serve
 
 L'application est accessible sur http://localhost:8080.
 
+Si l'application est consultée par une autre adresse que `localhost:8080` (aperçu dans un navigateur distant, mandataire), activer dans `.env` le réglage de développement `app.baseURLDepuisRequete = true` : les redirections reprennent alors l'adresse de la requête. Il est ignoré hors du mode `development`.
+
 Mettre à jour le code : `git pull`. Envoyer ses modifications : `git push`.
 
 ## Tests automatisés
@@ -323,6 +329,7 @@ Les tests utilisent la base PostgreSQL `gestion_materiel_tests` (groupe `tests` 
 - `tests/feature/Referentiel/ReglesTest.php` : règles RG-05 à RG-09 garanties par la base.
 - `tests/feature/Referentiel/PagesTest.php` : consultation, gestion par filière (interface et base), fiches propres aux forces, affectation limitée à une filière.
 - `tests/feature/Stocks/MouvementsTest.php` : règles du journal et du stock (stock calculé et jamais négatif, série unique, lots, annulation, immuabilité, détection d'une falsification, réforme).
+- `tests/feature/Stocks/BonsTest.php` : bons (émission, numérotation continue, une saisie refusée sans numéro consommé, immuabilité, PDF, cloisonnement).
 - `tests/feature/Stocks/PagesTest.php` : consultation et saisie, cloisonnement par l'interface et en base, annulation, fiche et état d'un matériel.
 - `tests/feature/Droits/CloisonnementTest.php` : critère de recette 7.3-2, prouvé par l'interface et directement en base (lecture, écriture, suppression, affectations terminées, à venir ou révoquées, délégations, journal immuable).
 - `tests/feature/Droits/AdministrationTest.php` : affectations, révocation, paramétrage des rôles, journal des connexions, délégations.

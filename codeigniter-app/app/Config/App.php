@@ -32,6 +32,34 @@ class App extends BaseConfig
     public array $allowedHostnames = [];
 
     /**
+     * Développement seulement : construit l'adresse de base à partir de la requête
+     * (en-têtes Host ou X-Forwarded-*), pour que les redirections fonctionnent derrière
+     * un aperçu ou un mandataire dont l'adresse n'est pas connue à l'avance.
+     * Activation dans .env : app.baseURLDepuisRequete = true. Ignoré hors développement.
+     */
+    public bool $baseURLDepuisRequete = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (! $this->baseURLDepuisRequete || ENVIRONMENT !== 'development' || is_cli()) {
+            return;
+        }
+
+        $hote  = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? '')[0]);
+        $proto = strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')[0]));
+        if ($proto === '') {
+            $proto = ($_SERVER['HTTPS'] ?? 'off') !== 'off' ? 'https' : 'http';
+        }
+
+        // Nom d'hôte et port uniquement : rien qui puisse injecter un chemin ou un autre schéma
+        if (preg_match('/^[A-Za-z0-9.-]+(:\d{1,5})?$/', $hote) === 1 && in_array($proto, ['http', 'https'], true)) {
+            $this->baseURL = $proto . '://' . $hote . '/';
+        }
+    }
+
+    /**
      * --------------------------------------------------------------------------
      * Index File
      * --------------------------------------------------------------------------

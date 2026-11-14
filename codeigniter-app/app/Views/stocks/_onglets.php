@@ -1,4 +1,4 @@
-<?php $onglets = ['stocks' => 'Stock', 'stocks/mouvements' => 'Mouvements'] ?>
+<?php $onglets = ['stocks' => 'Stock', 'stocks/mouvements' => 'Mouvements', 'stocks/bons' => 'Bons'] ?>
 <nav class="onglets">
     <?php foreach ($onglets as $chemin => $libelle): ?>
         <a class="bouton <?= $chemin === $onglet ? '' : 'secondaire' ?>" href="<?= site_url($chemin) ?>"><?= esc($libelle) ?></a>

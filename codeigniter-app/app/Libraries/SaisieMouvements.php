@@ -3,6 +3,7 @@
 namespace App\Libraries;
 
 use App\Models\Referentiel\ArticleModel;
+use App\Models\Stocks\BonModel;
 use App\Models\Stocks\LotModel;
 use App\Models\Stocks\MaterielModel;
 use App\Models\Stocks\MouvementModel;
@@ -73,6 +74,11 @@ class SaisieMouvements
                     'proprietaire_entite_id' => $this->proprietaire($saisie, $origine ?? $destination),
                 ])],
             };
+            // Bon de la saisie (STK-06), dans la même transaction : numéro consommé seulement si tout réussit
+            if (isset(BonModel::POUR_MOUVEMENT[$type])) {
+                (new BonModel())->emettre(BonModel::POUR_MOUVEMENT[$type], $ids);
+            }
+
             $this->db->transCommit();
 
             return $ids;
@@ -115,7 +121,7 @@ class SaisieMouvements
         $texte = $e->getMessage();
 
         return match (true) {
-            (bool) preg_match('/(Mouvement refusé|Stock insuffisant)[^\n]*/u', $texte, $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
+            (bool) preg_match('/(Mouvement refusé|Stock insuffisant|Bon refusé)[^\n]*/u', $texte, $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
             str_contains($texte, 'mouvement_mouvement_annule_id_key') => 'Ce mouvement a déjà été annulé.',
             str_contains($texte, 'row-level security') => 'Vous n\'avez pas le droit de saisir ce mouvement sur cet emplacement.',
             str_contains($texte, 'materiel_serialise_article_id_numero_serie_key') => 'Ce numéro de série existe déjà.',
