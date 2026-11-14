@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Libraries\SaisieMouvements;
 use App\Models\Organisation\EntiteModel;
 use App\Models\Referentiel\ArticleModel;
+use App\Models\Stocks\BonModel;
 use App\Models\Stocks\MouvementModel;
 use App\Models\Stocks\StockModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
@@ -67,6 +68,7 @@ class Mouvements extends BaseController
             'titrePage'    => 'Mouvement n° ' . $id,
             'm'            => $mouvement,
             'types'        => MouvementModel::TYPES,
+            'bon'          => (new BonModel())->duMouvement($id),
             'peutAnnuler'  => $mouvement['type'] !== 'annulation' && $mouvement['annule_par'] === null
                 && service('droits')->peut('stocks.mouvementer', $responsable),
         ]);
@@ -95,6 +97,10 @@ class Mouvements extends BaseController
         }
 
         $message = count($ids) === 1 ? 'Mouvement n° ' . $ids[0] . ' enregistré.' : count($ids) . ' mouvements enregistrés (un par numéro de série).';
+        $bon = (new BonModel())->duMouvement($ids[0]);
+        if ($bon !== null) {
+            $message .= ' ' . BonModel::TYPES[$bon['type']] . ' n° ' . $bon['numero'] . ' émis.';
+        }
 
         return redirect()->to(count($ids) === 1 ? 'stocks/mouvements/' . $ids[0] : 'stocks/mouvements')->with('message', $message);
     }

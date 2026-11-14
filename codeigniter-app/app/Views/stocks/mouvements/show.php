@@ -22,6 +22,9 @@
     <?php if ($m['mouvement_annule_id'] !== null): ?>
         <tr><th>Annule</th><td><a href="<?= site_url('stocks/mouvements/' . $m['mouvement_annule_id']) ?>">mouvement n° <?= esc($m['mouvement_annule_id']) ?></a></td></tr>
     <?php endif ?>
+    <?php if ($bon !== null): ?>
+        <tr><th>Bon</th><td><a href="<?= site_url('stocks/bons/' . $bon['id'] . '.pdf') ?>" target="_blank"><?= esc(\App\Models\Stocks\BonModel::TYPES[$bon['type']]) ?> n° <?= esc($bon['numero']) ?> (PDF)</a></td></tr>
+    <?php endif ?>
     <tr><th>Empreinte (SHA-256 chaînée)</th><td><code style="font-size: .75rem; word-break: break-all"><?= esc($m['empreinte']) ?></code></td></tr>
 </table>
 

@@ -105,6 +105,8 @@ $routes->group('stocks', ['filter' => 'session', 'namespace' => 'App\Controllers
     $routes->get('mouvements', 'Mouvements::index');
     $routes->get('mouvements/(:num)', 'Mouvements::show/$1');
     $routes->get('materiels/(:num)', 'Materiels::show/$1');
+    $routes->get('bons', 'Bons::index');
+    $routes->get('bons/(:num).pdf', 'Bons::pdf/$1');
 
     $routes->group('', ['filter' => 'droit:stocks.mouvementer'], static function ($routes) {
         $routes->get('mouvements/new', 'Mouvements::new');

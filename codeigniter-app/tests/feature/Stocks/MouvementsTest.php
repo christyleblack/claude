@@ -218,7 +218,8 @@ final class MouvementsTest extends TestCase
     {
         $this->entreeGasoil(10);
 
-        foreach (['UPDATE mouvement SET quantite = 99', 'DELETE FROM mouvement', 'TRUNCATE mouvement'] as $sql) {
+        // CASCADE : contourne la clé étrangère des bons, c'est bien l'immuabilité qui doit refuser
+        foreach (['UPDATE mouvement SET quantite = 99', 'DELETE FROM mouvement', 'TRUNCATE mouvement CASCADE'] as $sql) {
             try {
                 $this->db->query($sql);
                 $this->fail("Autorisé à tort : {$sql}");
