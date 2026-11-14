@@ -130,3 +130,31 @@ $routes->group('inventaires', ['filter' => 'session', 'namespace' => 'App\Contro
     $routes->post('(:num)/lignes', 'Inventaires::ajouterLigne/$1');
 });
 
+// Demandes et validations (lot 2) : états, circuits, séparation des tâches et service sont
+// contrôlés par les fonctions de la base appelées par les contrôleurs
+$routes->group('demandes', ['filter' => 'session', 'namespace' => 'App\Controllers\Demandes'], static function ($routes) {
+    $routes->group('circuits', ['filter' => 'droit:demandes.circuits'], static function ($routes) {
+        $routes->get('/', 'Circuits::index');
+        $routes->post('/', 'Circuits::create');
+        $routes->post('(:num)', 'Circuits::update/$1');
+        $routes->post('(:num)/etapes', 'Circuits::ajouterEtape/$1');
+        $routes->post('(:num)/etapes/(:num)/supprimer', 'Circuits::supprimerEtape/$1/$2');
+    });
+    $routes->get('/', 'Demandes::index');
+    $routes->get('new', 'Demandes::new', ['filter' => 'droit:demandes.saisir']);
+    $routes->post('/', 'Demandes::create', ['filter' => 'droit:demandes.saisir']);
+    $routes->get('(:num)', 'Demandes::show/$1');
+    $routes->get('(:num)/edit', 'Demandes::edit/$1');
+    $routes->post('(:num)', 'Demandes::update/$1');
+    $routes->post('(:num)/lignes', 'Demandes::ajouterLigne/$1');
+    $routes->post('(:num)/lignes/(:num)/supprimer', 'Demandes::supprimerLigne/$1/$2');
+    foreach (['soumettre', 'decider', 'servir', 'cloturer', 'annuler'] as $action) {
+        $routes->post("(:num)/{$action}", "Demandes::{$action}/$1");
+    }
+});
+$routes->group('notifications', ['filter' => 'session', 'namespace' => 'App\Controllers\Demandes'], static function ($routes) {
+    $routes->get('/', 'Notifications::index');
+    $routes->post('tout-lire', 'Notifications::toutLire');
+    $routes->post('(:num)/lire', 'Notifications::lire/$1');
+});
+
