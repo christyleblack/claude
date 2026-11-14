@@ -116,3 +116,17 @@ $routes->group('stocks', ['filter' => 'session', 'namespace' => 'App\Controllers
     });
 });
 
+// Inventaires (lot 1) : les droits, l'ordre des étapes et la séparation des tâches sont
+// vérifiés par les fonctions de la base appelées par le contrôleur
+$routes->group('inventaires', ['filter' => 'session', 'namespace' => 'App\Controllers\Inventaires'], static function ($routes) {
+    $routes->get('/', 'Inventaires::index');
+    $routes->get('new', 'Inventaires::new', ['filter' => 'droit:inventaires.gerer']);
+    $routes->post('/', 'Inventaires::create', ['filter' => 'droit:inventaires.gerer']);
+    $routes->get('(:num)', 'Inventaires::show/$1');
+    foreach (['lancer', 'terminer', 'signer', 'valider', 'annuler'] as $action) {
+        $routes->post("(:num)/{$action}", "Inventaires::{$action}/$1");
+    }
+    $routes->post('(:num)/comptage', 'Inventaires::compter/$1');
+    $routes->post('(:num)/lignes', 'Inventaires::ajouterLigne/$1');
+});
+

@@ -216,6 +216,20 @@ php spark db:seed StocksSeeder   # mouvements fictifs dans le dépôt de l'Armé
 php spark stocks:verifier        # intégrité du journal
 ```
 
+## Module Inventaires (lot 1)
+
+Exigences INV-01 à INV-03, règles RG-31 et RG-32. Modèle de données : `docs/lot1-modele-de-donnees.md`, section 6.
+
+| Adresse | Rôle |
+|---------|------|
+| `/inventaires` | inventaires du périmètre, par statut |
+| `/inventaires/new` | planification : complet, tournant ou contradictoire ; entité, emplacement facultatif, compteur, cédant et prenant (droit `inventaires.gerer`) |
+| `/inventaires/{id}` | fiche : lancement, feuille de comptage, ajout d'un matériel trouvé, écarts, signatures, validation, annulation |
+
+Déroulé : **planifié** → lancé (**en cours**) : les quantités théoriques sont figées et les emplacements gelés → **compté** par le compteur désigné → **validé** par une autre personne détenant `inventaires.valider` (RG-32), après signature du cédant et du prenant pour un inventaire contradictoire (INV-03). La validation crée un mouvement de régularisation par écart (RG-31) et lève le gel. Tous ces contrôles sont faits par la base, pas seulement par l'interface.
+
+Rôles par défaut (`php spark db:seed DroitsSeeder`, à relancer pour ajouter les nouvelles permissions) : le gestionnaire de dépôt planifie et lance, le chef du service logistique de force valide.
+
 ## Utilisateurs et droits (lot 1, section 4)
 
 CodeIgniter Shield gère les comptes et la connexion ; **les droits viennent des affectations** stockées en base :
