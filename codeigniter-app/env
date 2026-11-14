@@ -24,6 +24,8 @@
 # If you have trouble with `.`, you could also use `_`.
 # app_baseURL = ''
 # app.forceGlobalSecureRequests = false
+# Développement : adresse de base reprise de la requête (aperçu, mandataire)
+# app.baseURLDepuisRequete = false
 # app.CSPEnabled = false
 
 #--------------------------------------------------------------------

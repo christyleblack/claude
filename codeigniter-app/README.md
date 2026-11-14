@@ -311,6 +311,8 @@ php spark serve
 
 L'application est accessible sur http://localhost:8080.
 
+Si l'application est consultée par une autre adresse que `localhost:8080` (aperçu dans un navigateur distant, mandataire), activer dans `.env` le réglage de développement `app.baseURLDepuisRequete = true` : les redirections reprennent alors l'adresse de la requête. Il est ignoré hors du mode `development`.
+
 Mettre à jour le code : `git pull`. Envoyer ses modifications : `git push`.
 
 ## Tests automatisés
