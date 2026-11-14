@@ -272,9 +272,8 @@ classDiagram
 
     class Inventaire {
         type : complet | tournant | contradictoire
-        statut : planifie | en_cours | compte | valide | cloture
+        statut : planifie | en_cours | compte | valide | annule
         date_prevue
-        date_cloture
         compteur : Utilisateur
         valideur : Utilisateur [0..1]
     }
@@ -286,7 +285,7 @@ classDiagram
     }
 
     class Signature {
-        qualite : cedant | prenant | temoin
+        qualite : cedant | prenant
         horodatage
     }
 
@@ -305,6 +304,15 @@ classDiagram
 - **Séparation des tâches** (RG-32) : le valideur ne peut pas être le compteur ; contrainte vérifiée en base.
 - **Quantité théorique figée** : elle est copiée au lancement du comptage, pour que les mouvements ultérieurs ne faussent pas l'écart.
 - **Inventaire contradictoire** (INV-03) : lors d'une passation de responsabilité, le cédant et le prenant signent. → **H-07**
+
+**Mise en œuvre** (migration `CreerInventaires`) :
+
+- Chaque étape est une fonction de la base (`inventaire_lancer`, `inventaire_compter`, `inventaire_ajouter_ligne`, `inventaire_terminer_comptage`, `inventaire_signer`, `inventaire_valider`, `inventaire_annuler`) qui vérifie le statut, les droits (`inventaires.gerer`, `inventaires.valider`) et la personne désignée. L'application ne peut ni modifier une ligne, ni changer un statut directement.
+- **Champ** : toute l'entité inventoriée, ou un emplacement et ses sous-emplacements. Un seul inventaire en cours par entité.
+- **Gel** : tant qu'un inventaire est en cours ou compté, tout mouvement autre qu'une régularisation est refusé sur les emplacements de son champ, faute de quoi la quantité théorique figée deviendrait fausse.
+- **Comptage** : réservé au compteur désigné ; un matériel sérialisé se compte 1 (présent) ou 0 (absent). Un matériel trouvé mais absent du stock théorique s'ajoute comme ligne de quantité théorique nulle.
+- **Validation** (RG-31, RG-32) : réservée à un détenteur de `inventaires.valider` qui n'est pas le compteur (contrôle dans la fonction et contrainte sur la table). Pour un inventaire contradictoire, les deux signatures sont exigées. Chaque écart non nul devient un mouvement de type `regularisation`, dont l'auteur est le valideur ; il entre dans le journal chaîné et le stock comme tout autre mouvement. La ligne garde le lien vers son mouvement.
+- Un inventaire validé ou annulé ne change plus ; tout est tracé dans le journal d'audit.
 
 ## 7. Hypothèses à valider
 

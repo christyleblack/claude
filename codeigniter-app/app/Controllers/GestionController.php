@@ -75,7 +75,7 @@ abstract class GestionController extends BaseController
             // Contraintes garanties par la base (voir la migration CreerOrganisation)
             $message = match (true) {
                 // Règles métier signalées par la base elle-même (messages en français des déclencheurs)
-                (bool) preg_match('/(Cycle refusé|Délégation refusée|Mode de suivi refusé)[^\n]*/u', $e->getMessage(), $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
+                (bool) preg_match('/(Cycle refusé|Délégation refusée|Mode de suivi refusé|Inventaire refusé)[^\n]*/u', $e->getMessage(), $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
                 str_contains($e->getMessage(), 'row-level security') => 'Enregistrement refusé : il sortirait de votre périmètre ou de vos droits.',
                 ($nom = $this->contrainteEnCause($e->getMessage())) !== null => $this->contraintes[$nom],
                 default => 'Enregistrement refusé par la base de données : vérifiez les valeurs saisies.',
