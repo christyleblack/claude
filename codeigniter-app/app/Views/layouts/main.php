@@ -66,6 +66,9 @@
             <a href="<?= site_url('referentiel/articles') ?>" class="<?= $segment === 'referentiel' ? 'actif' : '' ?>">Référentiel</a>
             <a href="<?= site_url('stocks') ?>" class="<?= $segment === 'stocks' ? 'actif' : '' ?>">Stocks</a>
             <a href="<?= site_url('inventaires') ?>" class="<?= $segment === 'inventaires' ? 'actif' : '' ?>">Inventaires</a>
+            <a href="<?= site_url('demandes') ?>" class="<?= $segment === 'demandes' ? 'actif' : '' ?>">Demandes</a>
+            <?php $nonLues = (new \App\Models\Demandes\NotificationModel())->nonLues() ?>
+            <a href="<?= site_url('notifications') ?>" class="<?= $segment === 'notifications' ? 'actif' : '' ?>">Notifications<?= $nonLues > 0 ? ' <span class="badge" style="background:#b3261e;color:#fff">' . $nonLues . '</span>' : '' ?></a>
             <a href="<?= site_url('articles') ?>" class="<?= $segment === 'articles' ? 'actif' : '' ?>">Articles (exemple)</a>
             <a href="<?= site_url('administration/mes-droits') ?>" class="<?= in_array($page, ['administration/mes-droits', 'administration/delegations'], true) ? 'actif' : '' ?>">Mes droits</a>
             <?php if (service('droits')->peut('administration.utilisateurs')): ?><a href="<?= site_url('administration/utilisateurs') ?>" class="<?= $page === 'administration/utilisateurs' ? 'actif' : '' ?>">Utilisateurs</a><?php endif ?>

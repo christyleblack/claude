@@ -230,6 +230,26 @@ Déroulé : **planifié** → lancé (**en cours**) : les quantités théoriques
 
 Rôles par défaut (`php spark db:seed DroitsSeeder`, à relancer pour ajouter les nouvelles permissions) : le gestionnaire de dépôt planifie et lance, le chef du service logistique de force valide.
 
+## Module Demandes et validations (lot 2)
+
+Exigences DEM-01 à DEM-04, règles RG-15 à RG-19, circuits paramétrables (ADM-02). Modèle et hypothèses : `docs/lot2-demandes.md`.
+
+| Adresse | Rôle |
+|---------|------|
+| `/demandes` | mes demandes, à valider, à servir, tout mon périmètre ; filtre par statut |
+| `/demandes/new` | nouvelle demande en brouillon : entité demandeuse, filière (une seule), objet, date de besoin, priorité |
+| `/demandes/{id}` | lignes, soumission, circuit de validation, décision, service par perception, clôture, annulation, historique |
+| `/demandes/circuits` | paramétrage des circuits de validation par filière (droit `demandes.circuits`) |
+| `/notifications` | notifications de l'utilisateur ; leur nombre s'affiche dans le menu |
+
+Déroulé : le demandeur saisit sa demande en **brouillon** puis la **soumet**. Le circuit de sa filière (par défaut : échelon logistique supérieur, puis service gestionnaire de la filière au-delà de 100 unités sur une ligne) est copié en étapes. Chaque étape est **validée** ou **refusée** par un valideur de l'entité concernée, jamais par le demandeur (RG-19). Une fois validée, la demande est **servie** par des perceptions depuis les dépôts de l'entité de service, avec bon de perception. Une demande partiellement servie se **clôture** ; tant que rien n'est servi, elle s'**annule**. Toutes ces règles sont appliquées par la base.
+
+Rôles par défaut (`php spark db:seed DroitsSeeder`) :
+- demandeur et gestionnaire de dépôt : `demandes.saisir` ;
+- chef logistique de force, gestionnaire de filière et directeur DCMA : `demandes.valider` ;
+- administrateur fonctionnel : `demandes.circuits` ;
+- service : `stocks.mouvementer` sur l'entité de service ou l'un de ses dépôts.
+
 ## Utilisateurs et droits (lot 1, section 4)
 
 CodeIgniter Shield gère les comptes et la connexion ; **les droits viennent des affectations** stockées en base :
