@@ -51,7 +51,7 @@ trait JeuDeStocks
 
         $roles = new RoleModel();
         $mag   = (int) $roles->insert(['code' => 'MAG', 'libelle' => 'Magasinier', 'portee' => 'entite']);
-        $roles->definirPermissions($mag, ['stocks.mouvementer']);
+        $roles->definirPermissions($mag, ['stocks.mouvementer', 'stocks.sensibles']);
         $lecture = (int) $roles->insert(['code' => 'LECTURE', 'libelle' => 'Lecture', 'portee' => 'entite']);
 
         $this->magTerre     = fake(UserModel::class, ['username' => 'mag.terre', 'active' => 1]);

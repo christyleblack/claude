@@ -49,9 +49,9 @@ class Auth extends ShieldAuth
         'login'                       => 'auth/login',
         'register'                    => 'auth/register',
         'layout'                      => '\CodeIgniter\Shield\Views\layout',
-        'action_email_2fa'            => '\CodeIgniter\Shield\Views\email_2fa_show',
-        'action_email_2fa_verify'     => '\CodeIgniter\Shield\Views\email_2fa_verify',
-        'action_email_2fa_email'      => '\CodeIgniter\Shield\Views\Email\email_2fa_email',
+        'action_email_2fa'            => 'auth/double_facteur_demande',
+        'action_email_2fa_verify'     => 'auth/double_facteur_code',
+        'action_email_2fa_email'      => 'auth/double_facteur_courriel',
         'action_email_activate_show'  => '\CodeIgniter\Shield\Views\email_activate_show',
         'action_email_activate_email' => '\CodeIgniter\Shield\Views\Email\email_activate_email',
         'magic-link-login'            => '\CodeIgniter\Shield\Views\magic_link_form',
@@ -105,7 +105,8 @@ class Auth extends ShieldAuth
      */
     public array $actions = [
         'register' => null,
-        'login'    => null,
+        // Double facteur pour les seuls rôles sensibles (section 4.3), voir App\Authentication\DoubleFacteur
+        'login'    => \App\Authentication\DoubleFacteur::class,
     ];
 
     /**

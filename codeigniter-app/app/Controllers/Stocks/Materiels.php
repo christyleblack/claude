@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Stocks;
 
+use App\Libraries\JournalConsultations;
 use App\Controllers\BaseController;
 use App\Models\Stocks\MaterielModel;
 use App\Models\Stocks\MouvementModel;
@@ -20,6 +21,8 @@ class Materiels extends BaseController
         if ($materiel === null) {
             throw PageNotFoundException::forPageNotFound('Matériel introuvable.');
         }
+
+        JournalConsultations::siSensible('materiel_serialise', $id);
 
         return view('stocks/materiels/show', [
             'titrePage'  => $materiel['designation'] . ' n° ' . $materiel['numero_serie'],

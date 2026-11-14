@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Stocks;
 
+use App\Libraries\JournalConsultations;
 use App\Controllers\BaseController;
 use App\Libraries\SaisieMouvements;
 use App\Models\Organisation\EntiteModel;
@@ -58,6 +59,8 @@ class Mouvements extends BaseController
         if ($mouvement === null) {
             throw PageNotFoundException::forPageNotFound('Mouvement introuvable.');
         }
+
+        JournalConsultations::siSensible('mouvement', $id);
 
         $responsable = (int) db_connect()->query(
             'SELECT mouvement_entite_responsable(?, ?, ?, ?) AS e',

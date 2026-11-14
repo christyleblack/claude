@@ -17,6 +17,11 @@ use CodeIgniter\Database\Seeder;
  */
 class DroitsSeeder extends Seeder
 {
+    /**
+     * Rôles sensibles : connexion confirmée par un code (section 4.3).
+     */
+    private const DOUBLE_FACTEUR = ['ADMIN_SYSTEME', 'ADMIN_FONCTIONNEL', 'DIRECTEUR_DCMA', 'AUDITEUR', 'ARMURIER'];
+
     public function run()
     {
         $roles = new RoleModel();
@@ -32,11 +37,13 @@ class DroitsSeeder extends Seeder
             ['ADMIN_FONCTIONNEL', 'Administrateur fonctionnel (SEPCT)', 'nationale', ['organisation.gerer', 'administration.roles', 'referentiel.gerer']],
             ['OPERATEUR_DEPANNAGE', 'Opérateur dépannage (SEPCT)', 'nationale', []],
             ['CONDUCTEUR', 'Conducteur', 'entite', []],
+            ['ARMURIER', 'Gestionnaire de matériel sensible (armurier)', 'entite', ['stocks.mouvementer', 'stocks.sensibles', 'inventaires.gerer']],
         ] as [$code, $libelle, $portee, $permissions]) {
             $existant = $roles->where('code', $code)->first();
 
             if ($existant === null) {
-                $id = $roles->insert(['code' => $code, 'libelle' => $libelle, 'portee' => $portee, 'actif' => true]);
+                // Double facteur à la connexion pour les profils sensibles (section 4.3), modifiable ensuite
+                $id = $roles->insert(['code' => $code, 'libelle' => $libelle, 'portee' => $portee, 'actif' => true, 'double_facteur' => in_array($code, self::DOUBLE_FACTEUR, true)]);
                 $roles->definirPermissions((int) $id, $permissions);
 
                 continue;

@@ -123,6 +123,7 @@ class SaisieMouvements
         return match (true) {
             (bool) preg_match('/(Mouvement refusé|Stock insuffisant|Bon refusé)[^\n]*/u', $texte, $m) => preg_replace('/\s+CONTEXT:.*$/s', '', $m[0]),
             str_contains($texte, 'mouvement_mouvement_annule_id_key') => 'Ce mouvement a déjà été annulé.',
+            str_contains($texte, '"materiel_sensible"') => 'Mouvement refusé : cet article est du matériel sensible (armement, munitions…) ; il faut le droit « Mouvementer le matériel sensible » sur cette entité.',
             str_contains($texte, 'row-level security') => 'Vous n\'avez pas le droit de saisir ce mouvement sur cet emplacement.',
             str_contains($texte, 'materiel_serialise_article_id_numero_serie_key') => 'Ce numéro de série existe déjà.',
             default => 'Mouvement refusé par la base de données : vérifiez les valeurs saisies.',

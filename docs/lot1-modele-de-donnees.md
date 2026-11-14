@@ -134,6 +134,10 @@ classDiagram
 - **Cloisonnement en base** (règle 4.2-6) : les tables métier sont protégées par la sécurité au niveau des lignes de PostgreSQL (*Row Level Security*). À chaque requête, l'application transmet l'utilisateur connecté à la base, et les politiques de sécurité ne laissent passer que les lignes de son périmètre. Un oubli dans le code PHP ne suffit donc pas à exposer des données.
 - **Journal d'audit** (ADM-03, section 5 « Traçabilité ») : en insertion seule, comme le journal des mouvements.
 - **Mise en œuvre** (module Utilisateurs et droits) : la portée d'un rôle est *nationale* ou *entité* ; une affectation ou une délégation peut être **révoquée** avant terme (date et auteur conservés). Le périmètre suit l'arbre **hiérarchique**. → **H-08**. Une affectation peut être limitée à une filière (H-02) depuis le module Référentiel.
+- **Sécurité** (migration `CreerSecurite`) :
+  - *Double facteur* (section 4.3) : attribut `double_facteur` sur `Role` ; la fonction `securite_double_facteur_requis(utilisateur)` dit si l'utilisateur détient, par affectation ou délégation active, un rôle sensible. Le code est envoyé par courriel. → **H-09**
+  - *Contrôle par la sensibilité de l'article* (règle 4.2-2) : une politique restrictive sur `Mouvement` exige la permission `stocks.sensibles` pour tout article dont la sensibilité n'est pas « courant », sauf pour les régularisations d'inventaire. → **H-10**
+  - *Journal des consultations* (section 5) : la consultation d'un matériel sérialisé, d'un mouvement ou d'un bon portant sur du matériel sensible ajoute une ligne `CONSULTATION` au journal d'audit.
 - **Séparation des tâches** (règle 4.2-4, RG-32) : vérifiée par l'application et doublée d'une contrainte en base là où c'est possible (par exemple : le valideur d'un inventaire est différent du compteur).
 
 ## 4. Référentiel du matériel (REF-01 à REF-05, RG-05 à RG-09)
@@ -328,6 +332,8 @@ Ces choix ont été faits pour pouvoir avancer ; chacun peut être modifié avan
 | H-06 | Le détenteur est l'entité qui possède l'emplacement où se trouve le matériel | Un matériel peut-il être détenu par une entité sans être stocké chez elle (prêt, mission) ? | STK-04 |
 | H-07 | Signature électronique simple : validation par l'utilisateur authentifié, horodatée et journalisée | Faut-il une signature manuscrite numérisée ou un certificat ? | INV-03, ARM-03 |
 | H-08 | Le périmètre d'une affectation de portée « entité » couvre l'entité et ses subordonnées dans l'arbre **hiérarchique** | Un service logistique doit-il aussi voir les entités qu'il ravitaille (arbre logistique) ? Ce besoin apparaîtra surtout avec les demandes (lot 2) | Règle 4.2-3 |
+| H-09 | Second facteur par code envoyé par courriel ; rôles sensibles par défaut : administrateurs, directeur DCMA, auditeur, armurier | Le courriel suffit-il, ou faut-il une application d'authentification (TOTP), une carte ou l'annuaire de la défense ? Quels rôles sont sensibles ? | Section 4.3 |
+| H-10 | Un droit supplémentaire unique (`stocks.sensibles`) pour l'armement, les munitions et le matériel sensible ; la consultation reste ouverte à tout le périmètre mais est journalisée | Faut-il des droits distincts par sensibilité, ou restreindre aussi la consultation ? | Règle 4.2-2, section 5 |
 
 ## 8. Règles de gestion et points ouverts qui conditionnent le lot 1
 

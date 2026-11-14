@@ -253,10 +253,43 @@ Toute modification des tables protégées est enregistrée par un déclencheur P
 
 Expiration après 30 minutes d'inactivité (`session.expiration` dans `.env`) ; « se souvenir de moi » est désactivé car il contournerait cette expiration.
 
+### Double facteur pour les rôles sensibles (section 4.3)
+
+Un rôle peut être déclaré **sensible** (case « connexion confirmée par un code » dans *Administration › Rôles*). Quiconque détient un rôle sensible, par affectation ou par délégation, confirme sa connexion par un code à six chiffres envoyé par courriel. Par défaut : administrateur système, administrateur fonctionnel, directeur DCMA, auditeur, armurier.
+
+L'envoi des courriels se configure dans `.env` :
+
+```ini
+email.fromEmail = 'gestion-materiel@exemple.local'
+email.fromName  = 'Gestion du matériel'
+email.protocol  = 'smtp'
+email.SMTPHost  = 'smtp.exemple.local'
+email.SMTPPort  = 587
+email.SMTPUser  = '...'
+email.SMTPPass  = '...'
+email.SMTPCrypto = 'tls'
+```
+
+**Poste de développement** : tant que `email.SMTPHost` est vide (et hors production), aucun courriel n'est envoyé. Le code est écrit dans le journal de l'application :
+
+```bash
+grep "Double facteur" writable/logs/log-$(date +%F).log | tail -1
+```
+
+En production, sans serveur SMTP, la connexion des rôles sensibles échoue : le code n'est jamais affiché.
+
+### Matériel sensible (section 4.2-2)
+
+Mouvementer un article d'armement, de munitions ou de matériel sensible exige, en plus de `stocks.mouvementer`, la permission **`stocks.sensibles`** sur l'entité responsable. La base l'impose par une politique de sécurité. Le rôle par défaut **ARMURIER** (gestionnaire de matériel sensible) la détient ; le gestionnaire de dépôt ne la détient pas. Les régularisations d'inventaire en sont exemptées : elles relèvent de `inventaires.valider` et de la séparation des tâches (RG-32).
+
+### Journal des consultations (section 5)
+
+L'affichage d'une fiche de matériel sérialisé, d'un mouvement ou d'un bon PDF qui porte sur du matériel sensible est inscrit au journal d'audit (action `CONSULTATION`), avec l'utilisateur, l'objet et l'adresse IP.
+
 ### Mise en route
 
 ```bash
-php spark db:seed DroitsSeeder      # les dix profils de la section 4.1 ; relancé, complète leurs permissions par défaut
+php spark db:seed DroitsSeeder      # les profils de la section 4.1 et l'armurier ; relancé, complète leurs permissions par défaut
 php spark droits:affecter <identifiant> ADMIN_SYSTEME DCMA       # premier administrateur
 php spark droits:affecter <identifiant> ADMIN_FONCTIONNEL DCMA   # gestion de l'organisation
 ```

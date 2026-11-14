@@ -80,6 +80,8 @@ class Roles extends GestionController
             'libelle' => $this->champ('libelle'),
             'portee'  => $this->champ('portee'),
             'actif'   => $this->case('actif'),
+            // Connexion confirmée par un code pour les détenteurs du rôle (section 4.3)
+            'double_facteur' => $this->case('double_facteur'),
         ];
     }
 

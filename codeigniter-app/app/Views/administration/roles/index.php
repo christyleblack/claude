@@ -10,7 +10,7 @@
     <tbody>
     <?php foreach ($roles as $r): ?>
         <tr class="<?= $r['actif'] ? '' : 'inactif' ?>">
-            <td><?= esc($r['libelle']) ?><?= $r['actif'] ? '' : ' <span class="badge">inactif</span>' ?></td>
+            <td><?= esc($r['libelle']) ?><?= $r['actif'] ? '' : ' <span class="badge">inactif</span>' ?><?= $r['double_facteur'] ? ' <span class="badge" title="Connexion confirmée par un code">double facteur</span>' : '' ?></td>
             <td><?= esc($r['code']) ?></td>
             <td><?= $r['portee'] === 'nationale' ? 'nationale' : 'entité' ?></td>
             <td><?= $r['permissions'] === [] ? '<span class="fil">consultation de son périmètre</span>' : implode('<br>', array_map(static fn ($p) => esc($permissions[$p] ?? $p), $r['permissions'])) ?></td>
