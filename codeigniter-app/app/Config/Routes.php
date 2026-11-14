@@ -98,3 +98,19 @@ $routes->group('referentiel', ['filter' => 'session', 'namespace' => 'App\Contro
     });
 });
 
+// Stocks et mouvements (lot 1) : consultation dans le périmètre ; saisie et annulation avec
+// stocks.mouvementer sur l'entité responsable, vérifiée par la base
+$routes->group('stocks', ['filter' => 'session', 'namespace' => 'App\Controllers\Stocks'], static function ($routes) {
+    $routes->get('/', 'Stocks::index');
+    $routes->get('mouvements', 'Mouvements::index');
+    $routes->get('mouvements/(:num)', 'Mouvements::show/$1');
+    $routes->get('materiels/(:num)', 'Materiels::show/$1');
+
+    $routes->group('', ['filter' => 'droit:stocks.mouvementer'], static function ($routes) {
+        $routes->get('mouvements/new', 'Mouvements::new');
+        $routes->post('mouvements', 'Mouvements::create');
+        $routes->post('mouvements/(:num)/annuler', 'Mouvements::annuler/$1');
+        $routes->post('materiels/(:num)/etat', 'Materiels::etat/$1');
+    });
+});
+

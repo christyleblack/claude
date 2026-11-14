@@ -183,11 +183,40 @@ Référentiel unique national (REF-01 à REF-05, RG-05 à RG-09). Modèle de don
 php spark db:seed ReferentielSeeder   # trois filières du cahier des charges, catégories, articles d'exemple (fictifs)
 ```
 
+## Module Stocks et mouvements (lot 1)
+
+Exigences STK-01 à STK-05, règles RG-10 à RG-14. Modèle de données : `docs/lot1-modele-de-donnees.md`, section 5.
+
+| Adresse | Rôle |
+|---------|------|
+| `/stocks` | stock par emplacement, par entité détentrice ou total, filtrable sur une entité et ses subordonnées (STK-01) |
+| `/stocks/mouvements` | journal des mouvements (recherche par article, lot, n° de série, type) |
+| `/stocks/mouvements/new` | saisie : entrée, sortie, transfert, perception, réintégration, perte, réforme (STK-02) |
+| `/stocks/mouvements/{id}` | détail, empreinte, annulation par mouvement inverse |
+| `/stocks/materiels/{id}` | matériel sérialisé : emplacement actuel, historique, état (STK-05) |
+
+**Garanties apportées par la base** (migration `CreerStocks`) :
+
+- **Journal immuable** (RG-12, STK-03) : aucun mouvement ne se modifie ni ne se supprime, même par le propriétaire des tables ; une erreur se corrige par un mouvement d'annulation, lié à l'original, une seule fois.
+- **Stock calculé** (RG-10) : la table `stock` est tenue exclusivement par la base à chaque mouvement ; l'application ne peut que la lire.
+- **Stock jamais négatif** (RG-13), y compris quand deux sorties arrivent en même temps : la ligne de stock est verrouillée pendant la mise à jour.
+- **Suivi** (RG-06, RG-11, RG-14) : quantité, lot (créé à la première entrée, avec péremption) ou numéro de série (un mouvement par numéro ; un matériel n'est qu'à un seul endroit ; un matériel réformé ne bouge plus).
+- **Propriétaire et détenteur** (STK-04) : le détenteur est l'entité de l'emplacement ; le propriétaire est porté par le mouvement (par défaut le détenteur).
+- **Infalsifiabilité** (H-05) : chaque mouvement porte une empreinte SHA-256 chaînée au précédent. `php spark stocks:verifier` signale le premier mouvement altéré, même par un administrateur de la base ; à planifier régulièrement.
+- **Droits** : on ne voit que les mouvements, le stock et les matériels de son périmètre. Saisir ou annuler exige `stocks.mouvementer` sur l'entité responsable : le destinataire pour une entrée ou une réintégration, l'expéditeur sinon.
+
+Une saisie de plusieurs numéros de série forme une seule transaction : si un numéro est refusé, rien n'est enregistré. La régularisation est réservée aux inventaires (module suivant) ; les bons PDF (STK-06) suivront.
+
+```bash
+php spark db:seed StocksSeeder   # mouvements fictifs dans le dépôt de l'Armée de Terre (exige un compte utilisateur)
+php spark stocks:verifier        # intégrité du journal
+```
+
 ## Utilisateurs et droits (lot 1, section 4)
 
 CodeIgniter Shield gère les comptes et la connexion ; **les droits viennent des affectations** stockées en base :
 
-- **Rôle** (RBAC) : un ensemble de permissions (`organisation.gerer`, `referentiel.gerer`, `referentiel.fiche_force`, `administration.utilisateurs`, `administration.roles`, `audit.consulter`) et une portée, *nationale* (toute l'organisation) ou *entité* (l'entité d'affectation et ses subordonnées hiérarchiques). Rôles et permissions se paramètrent dans Administration › Rôles (ADM-02).
+- **Rôle** (RBAC) : un ensemble de permissions (`organisation.gerer`, `referentiel.gerer`, `referentiel.fiche_force`, `stocks.mouvementer`, `administration.utilisateurs`, `administration.roles`, `audit.consulter`) et une portée, *nationale* (toute l'organisation) ou *entité* (l'entité d'affectation et ses subordonnées hiérarchiques). Rôles et permissions se paramètrent dans Administration › Rôles (ADM-02).
 - **Affectation** (ABAC, RG-04) : un rôle exercé sur une entité, du … au …, éventuellement limité à une filière (H-02) ; un utilisateur peut en avoir plusieurs. Une affectation se révoque, elle ne se supprime pas.
 - **Délégation** (règle 4.2-5) : le titulaire d'une affectation la confie temporairement à un autre utilisateur (page « Mes droits »), avec un motif ; la période doit tenir dans celle de l'affectation, l'auto-délégation est refusée par la base.
 - **Sans affectation active, un utilisateur ne voit aucune donnée.**
@@ -293,6 +322,8 @@ Les tests utilisent la base PostgreSQL `gestion_materiel_tests` (groupe `tests` 
 - `tests/feature/Organisation/PagesTest.php` : pages du module Organisation (consultation, permission `organisation.gerer`, création, refus des cycles et des doublons, forces, sites, emplacements).
 - `tests/feature/Referentiel/ReglesTest.php` : règles RG-05 à RG-09 garanties par la base.
 - `tests/feature/Referentiel/PagesTest.php` : consultation, gestion par filière (interface et base), fiches propres aux forces, affectation limitée à une filière.
+- `tests/feature/Stocks/MouvementsTest.php` : règles du journal et du stock (stock calculé et jamais négatif, série unique, lots, annulation, immuabilité, détection d'une falsification, réforme).
+- `tests/feature/Stocks/PagesTest.php` : consultation et saisie, cloisonnement par l'interface et en base, annulation, fiche et état d'un matériel.
 - `tests/feature/Droits/CloisonnementTest.php` : critère de recette 7.3-2, prouvé par l'interface et directement en base (lecture, écriture, suppression, affectations terminées, à venir ou révoquées, délégations, journal immuable).
 - `tests/feature/Droits/AdministrationTest.php` : affectations, révocation, paramétrage des rôles, journal des connexions, délégations.
 - `tests/feature/AuthPagesTest.php` : pages de connexion et d'inscription (mise en page, inscription, mauvais mot de passe).

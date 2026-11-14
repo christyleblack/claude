@@ -260,6 +260,7 @@ classDiagram
 - **Stock calculé** (RG-10, STK-01) : vue qui additionne les entrées et soustrait les sorties, par article, lot, emplacement et propriétaire. L'agrégation par entité, force ou au niveau national s'obtient en remontant les arbres.
 - **Stock jamais négatif** (RG-13, validée) : contrôlé dans la même transaction que l'insertion du mouvement, avec un verrou sur la ligne de stock concernée, pour que deux sorties simultanées ne puissent pas passer toutes les deux.
 - **Propriétaire et détenteur** (STK-04) : le propriétaire est porté par le mouvement ; le détenteur est l'entité à laquelle appartient l'emplacement où se trouve le matériel. → **H-06**
+- **Mise en œuvre** (module Stocks et mouvements) : le stock est une table tenue exclusivement par des déclencheurs à chaque mouvement (l'application ne peut que la lire), ce qui permet de verrouiller la ligne concernée et de garantir RG-13 en concurrence ; un index unique garantit RG-14. Le calcul de l'empreinte chaînée sérialise les saisies de mouvements (verrou court) : à réévaluer quand la volumétrie sera connue. Saisir un mouvement exige `stocks.mouvementer` sur l'entité **responsable** : le destinataire pour une entrée ou une réintégration, l'expéditeur pour les autres types, celui de l'original pour une annulation. La régularisation est réservée aux inventaires.
 - **Bons** (STK-06) : bon de perception, bon de sortie, bordereau de transfert, générés en PDF à partir d'un ou plusieurs mouvements, avec une numérotation continue.
 
 ## 6. Inventaires (INV-01 à INV-03, RG-31, RG-32)

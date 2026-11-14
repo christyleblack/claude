@@ -26,7 +26,7 @@ class DroitsSeeder extends Seeder
             ['DIRECTEUR_DCMA', 'Directeur / cadre DCMA', 'nationale', []],
             ['GESTIONNAIRE_FILIERE', 'Gestionnaire de filière (service central)', 'nationale', ['referentiel.gerer']],
             ['CHEF_LOGISTIQUE_FORCE', 'Chef du service logistique de force', 'entite', ['referentiel.fiche_force']],
-            ['GESTIONNAIRE_DEPOT', 'Gestionnaire de dépôt / magasinier', 'entite', []],
+            ['GESTIONNAIRE_DEPOT', 'Gestionnaire de dépôt / magasinier', 'entite', ['stocks.mouvementer']],
             ['DEMANDEUR', 'Demandeur (unité)', 'entite', []],
             ['AUDITEUR', 'Auditeur / contrôleur', 'nationale', ['audit.consulter']],
             ['ADMIN_FONCTIONNEL', 'Administrateur fonctionnel (SEPCT)', 'nationale', ['organisation.gerer', 'administration.roles', 'referentiel.gerer']],
